@@ -17,6 +17,7 @@
 		94A2D761298BC8880051AD19 /* YSBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 94A2D75F298BC8880051AD19 /* YSBold.ttf */; };
 		94A2D765298BCB2E0051AD19 /* Font.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A2D764298BCB2E0051AD19 /* Font.swift */; };
 		94A2D768298CF5370051AD19 /* YPButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A2D767298CF5370051AD19 /* YPButton.swift */; };
+		94A2D78A29922D380051AD19 /* TrackerListVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A2D78929922D380051AD19 /* TrackerListVC.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		94A2D75F298BC8880051AD19 /* YSBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = YSBold.ttf; sourceTree = "<group>"; };
 		94A2D764298BCB2E0051AD19 /* Font.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Font.swift; sourceTree = "<group>"; };
 		94A2D767298CF5370051AD19 /* YPButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YPButton.swift; sourceTree = "<group>"; };
+		94A2D78929922D380051AD19 /* TrackerListVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerListVC.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +73,7 @@
 				94A2D7472988E4020051AD19 /* SplashViewController.swift */,
 				94A2D7572988EA550051AD19 /* OnboardingVC.swift */,
 				94A2D7512988E4030051AD19 /* Info.plist */,
+				94A2D78929922D380051AD19 /* TrackerListVC.swift */,
 			);
 			path = Tracker;
 			sourceTree = "<group>";
@@ -187,6 +190,7 @@
 				94A2D7582988EA550051AD19 /* OnboardingVC.swift in Sources */,
 				94A2D768298CF5370051AD19 /* YPButton.swift in Sources */,
 				94A2D765298BCB2E0051AD19 /* Font.swift in Sources */,
+				94A2D78A29922D380051AD19 /* TrackerListVC.swift in Sources */,
 				94A2D7442988E4020051AD19 /* AppDelegate.swift in Sources */,
 				94A2D7462988E4020051AD19 /* SceneDelegate.swift in Sources */,
 			);
@@ -332,7 +336,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -361,7 +365,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

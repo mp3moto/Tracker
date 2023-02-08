@@ -7,7 +7,7 @@ final class YPButton: UIButton {
         backgroundColor = UIColor(named: "YPBlack")
         setTitle(text, for: .normal)
         layer.cornerRadius = 16
-        titleLabel?.font = UIFont(name: "YS Display", size: 16)
+        titleLabel?.font = UIFont(name: "YSDisplay-Medium", size: 16)
         setTitleColor(UIColor(named: "White Color"), for: .normal)
     }
     
