@@ -130,6 +130,7 @@ class NewTrackerViewController: UIViewController {
         let cancelButton = YPButton(text: "Отменить", destructive: true)
         let createButton = YPButton(text: "Создать", destructive: false)
         createButton.isEnabled = false
+        cancelButton.addTarget(self, action: #selector(cancelCreation), for: .touchUpInside)
         
         let stackView = UIStackView(arrangedSubviews: [cancelButton, createButton])
         stackView.axis = .horizontal
@@ -146,6 +147,10 @@ class NewTrackerViewController: UIViewController {
             stackView.heightAnchor.constraint(equalToConstant: 60)
         ])
         /*----------------------------------------------------------------*/
+    }
+    
+    @objc func cancelCreation() {
+        dismiss(animated: true)
     }
 }
 

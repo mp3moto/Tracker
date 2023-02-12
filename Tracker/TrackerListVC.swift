@@ -131,7 +131,7 @@ final class TrackerListViewController: UIViewController, UICollectionViewDataSou
     
     @objc private func addTracker() {
         let createNewTrackerVC = CreateNewTrackerViewController()
-        
+        //navigationController?.pushViewController(createNewTrackerVC, animated: true)
         present(createNewTrackerVC, animated: true)
     }
 }
