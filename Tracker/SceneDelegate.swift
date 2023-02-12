@@ -21,6 +21,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = tabBarVC
         //let vc1 = TrackerListViewController()
         //window.rootViewController = vc1
+        //let newTracker = NewTrackerViewController()
+        //window.rootViewController = newTracker
+        //let splash = SplashViewController()
+        //window.rootViewController = splash
+        //let test = TestScreen()
+        //window.rootViewController = test
         self.window = window
         window.makeKeyAndVisible()
     }

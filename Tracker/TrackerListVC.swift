@@ -28,6 +28,7 @@ final class TrackerListViewController: UIViewController, UICollectionViewDataSou
     private let searchController = UISearchController(searchResultsController: nil)
     
     override func viewDidLoad() {
+        super.viewDidLoad()
         view.backgroundColor = UIColor(named: "YPWhite")
         configureNavigationBar()
         
@@ -94,6 +95,7 @@ final class TrackerListViewController: UIViewController, UICollectionViewDataSou
     func configureNavigationBar() {
         let addTrackerButton = UIButton()
         addTrackerButton.setImage(UIImage(named: "Add tracker"), for: .normal)
+        
         addTrackerButton.translatesAutoresizingMaskIntoConstraints = false
         
         title = "Трекеры"
@@ -101,8 +103,14 @@ final class TrackerListViewController: UIViewController, UICollectionViewDataSou
         let appearance = UINavigationBarAppearance()
         appearance.largeTitleTextAttributes = [.font: UIFont(name: "YSDisplay-Bold", size: 34)]
         navigationItem.standardAppearance = appearance
-        
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: addTrackerButton)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(named: "Add tracker"),
+            style: .plain,
+            target: self,
+            action: #selector(addTracker)
+        )
+        navigationItem.leftBarButtonItem?.tintColor = UIColor(named: "YPBlack")
+        //navigationItem.leftBarButtonItem = UIBarButtonItem(customView: addTrackerButton)
         
         let datePicker = UIDatePicker()
         datePicker.preferredDatePickerStyle = .compact
@@ -119,6 +127,12 @@ final class TrackerListViewController: UIViewController, UICollectionViewDataSou
         NSLayoutConstraint.activate([
             datePicker.widthAnchor.constraint(lessThanOrEqualToConstant: 100)
         ])
+    }
+    
+    @objc private func addTracker() {
+        let createNewTrackerVC = CreateNewTrackerViewController()
+        
+        present(createNewTrackerVC, animated: true)
     }
 }
 
