@@ -79,8 +79,6 @@ final class ScheduleViewCotroller: UIViewController {
             sat: days[5],
             sun: days[6]
         )
-        //print("addSchedule called, parentVC is \(parentVC)")
-        //parentVC?.setSchedule()
         dismiss(animated: true)
     }
     

@@ -102,7 +102,7 @@ final class TrackerListViewController: UIViewController {
         title = "Трекеры"
         navigationController?.navigationBar.prefersLargeTitles = true
         let appearance = UINavigationBarAppearance()
-        appearance.largeTitleTextAttributes = [.font: UIFont(name: "YSDisplay-Bold", size: 34)]
+        appearance.largeTitleTextAttributes = [.font: UIFont(name: "YSDisplay-Bold", size: 34) ?? "System"]
         navigationItem.standardAppearance = appearance
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             image: UIImage(named: "Add tracker"),
