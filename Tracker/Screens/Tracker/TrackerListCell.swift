@@ -9,6 +9,12 @@ final class TrackerListCell: UITableViewCell {
         }
     }
     
+    var cellValueText: String? {
+        didSet {
+            selectedValueLabel.text = cellValueText
+        }
+    }
+    
     let containerView: UIView = {
       let view = UIView()
       view.translatesAutoresizingMaskIntoConstraints = false
@@ -21,10 +27,24 @@ final class TrackerListCell: UITableViewCell {
         return image
     }()
     
+    let cellTextArea: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     let titleLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont(name: "YSDisplay-Medium", size: 17)
         label.textColor = UIColor(named: "YPBlack")
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    let selectedValueLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: "YSDisplay-Medium", size: 17)
+        label.textColor = UIColor(named: "YPCellSelectedValue")
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -38,13 +58,12 @@ final class TrackerListCell: UITableViewCell {
         
         backgroundColor = UIColor(named: "YPGray")
         
-        
-        
-        //let chevronImage =
         chevronImage.translatesAutoresizingMaskIntoConstraints = false
         
         contentView.addSubview(containerView)
-        containerView.addSubview(titleLabel)
+        containerView.addSubview(cellTextArea)
+        cellTextArea.addSubview(titleLabel)
+        cellTextArea.addSubview(selectedValueLabel)
         containerView.addSubview(chevronImage)
         
         NSLayoutConstraint.activate([
@@ -52,9 +71,20 @@ final class TrackerListCell: UITableViewCell {
             containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             containerView.heightAnchor.constraint(equalToConstant: 75),
-            //containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+
+            cellTextArea.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            cellTextArea.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            cellTextArea.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            cellTextArea.topAnchor.constraint(equalTo: titleLabel.topAnchor),
+            cellTextArea.bottomAnchor.constraint(equalTo: selectedValueLabel.bottomAnchor),
+            //cellTextArea.heightAnchor.constraint(equalToConstant: 30),
+            
+            titleLabel.leadingAnchor.constraint(equalTo: cellTextArea.leadingAnchor),
+            //titleLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            
+            selectedValueLabel.leadingAnchor.constraint(equalTo: cellTextArea.leadingAnchor),
+            selectedValueLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor),
+
             chevronImage.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
             chevronImage.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
             chevronImage.widthAnchor.constraint(equalToConstant: 24),

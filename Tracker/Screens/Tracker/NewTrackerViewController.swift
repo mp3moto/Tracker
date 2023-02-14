@@ -1,7 +1,16 @@
 import UIKit
 
 class NewTrackerViewController: UIViewController {
-    
+    var completion: (() -> Void)?
+    var selectedCategory: Int?
+    var selectedSchedule: Schedule? {
+        didSet {
+            trackerParamsTableView.reloadData()
+        }
+    }
+    let data = DataManagement()
+    //static let DidCancelNotification = Notification.Name(rawValue: "TrackerCreationCancelled")
+    let trackerParamsTableView = UITableView()
     let trackerParamsTableViewValues: [String] = ["Категория", "Расписание"]
     let emojiAndColorCollection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     let emoji: [String] = ["🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"]
@@ -87,7 +96,7 @@ class NewTrackerViewController: UIViewController {
         /*----------------------------------------------------------------*/
         
         /*--------------------------TrackerParams-------------------------*/
-        let trackerParamsTableView = UITableView()
+        
         trackerParamsTableView.layer.cornerRadius = 16
         trackerParamsTableView.translatesAutoresizingMaskIntoConstraints = false
         pageContentView.addSubview(trackerParamsTableView)
@@ -150,7 +159,25 @@ class NewTrackerViewController: UIViewController {
     }
     
     @objc func cancelCreation() {
-        dismiss(animated: true)
+        /*
+        NotificationCenter.default.post(
+            name: NewTrackerViewController.DidCancelNotification,
+            object: self,
+            userInfo: [:]
+        )
+         */
+        completion?()
+    }
+    
+    @objc func setCategory(id: Int) {
+        selectedCategory = data.categories?[id].id
+        trackerParamsTableView.reloadData()
+        //print("selected category: \(selectedCategory)")
+    }
+    
+    func setSchedule() {
+        print("selectedSchedule = \(selectedSchedule)")
+        trackerParamsTableView.reloadData()
     }
 }
 
@@ -245,7 +272,11 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate, 
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: TrackerListCell.reuseIdentifier, for: indexPath) as? TrackerListCell else { return TrackerListCell() }
-        
+        if indexPath.row == 0 {
+            cell.cellValueText = data.categories?.first(where: { $0.id == selectedCategory })?.name
+        } else {
+            cell.cellValueText = selectedSchedule?.text()
+        }
         cell.cellText = trackerParamsTableViewValues[indexPath.row]
         cell.selectionStyle = .none
         
@@ -261,6 +292,19 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate, 
             cell.separatorInset = .init(top: 0, left: .infinity, bottom: 0, right: 0)
         } else {
             cell.separatorInset = .init(top: 0, left: 16, bottom: 0, right: 16)
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        switch indexPath.row {
+        case 0:
+            let categoriesVC = CategoriesViewCotroller()
+            categoriesVC.parentVC = self
+            present(categoriesVC, animated: true)
+        default:
+            let scheduleVC = ScheduleViewCotroller()
+            scheduleVC.parentVC = self
+            present(scheduleVC, animated: true)
         }
     }
 }

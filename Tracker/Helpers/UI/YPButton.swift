@@ -8,6 +8,8 @@ final class YPButton: UIButton {
         }
     }
     
+    //var additionalParams: [String]?
+    
     init(text: String, destructive: Bool) {
         super.init(frame: .zero)
         setTitle(text, for: .normal)

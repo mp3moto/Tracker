@@ -10,25 +10,16 @@ final class TrackerItem: UICollectionViewCell {
     }
 }
 
-final class TrackerListViewController: UIViewController, UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 0
-    }
+final class TrackerListViewController: UIViewController {
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as? TrackerItem else {
-            return UICollectionViewCell()
-        }
-        
-        cell.prepareForReuse()
-        
-        return cell
-    }
-    
+    let dataManagement = DataManagement()
+    //let categories = DataManagement().categories
     private let searchController = UISearchController(searchResultsController: nil)
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        //dataManagement.categories = nil
+        //print(dataManagement.categories)
         view.backgroundColor = UIColor(named: "YPWhite")
         configureNavigationBar()
         
@@ -55,6 +46,16 @@ final class TrackerListViewController: UIViewController, UICollectionViewDataSou
             noTrackersIndicatorView.centerXAnchor.constraint(equalTo: collection.centerXAnchor),
             noTrackersIndicatorView.centerYAnchor.constraint(equalTo: collection.centerYAnchor)
         ])
+        /*
+        NotificationCenter.default.addObserver(
+            forName: NewTrackerViewController.DidCancelNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            self.dismiss(animated: true)
+        }
+         */
     }
     
     func createNoTrackersIndicator() -> UIView {
@@ -131,8 +132,26 @@ final class TrackerListViewController: UIViewController, UICollectionViewDataSou
     
     @objc private func addTracker() {
         let createNewTrackerVC = CreateNewTrackerViewController()
-        //navigationController?.pushViewController(createNewTrackerVC, animated: true)
+        createNewTrackerVC.completion = { [weak self] in
+            self?.dismiss(animated: true)
+        }
         present(createNewTrackerVC, animated: true)
+    }
+}
+
+extension TrackerListViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return 0
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as? TrackerItem else {
+            return UICollectionViewCell()
+        }
+        
+        cell.prepareForReuse()
+        
+        return cell
     }
 }
 
