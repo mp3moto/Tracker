@@ -5,10 +5,14 @@ final class ScheduleViewCotroller: UIViewController {
     let daysOfWeek: [String] = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     private var days: [Bool] = [false, false, false, false, false, false, false]
     weak var parentVC: NewTrackerViewController?
+    var schedule: Schedule?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(named: "YPWhite")
+        if let schedule = schedule {
+            days = convert(schedule: schedule)
+        }
         
         /* -------------------------- TITLE -------------------------- */
         let titleView = UIView(frame: .zero)
@@ -69,6 +73,10 @@ final class ScheduleViewCotroller: UIViewController {
         /* --------------------------------------------------------------- */
     }
     
+    func convert(schedule: Schedule) -> [Bool] {
+        return [schedule.mon, schedule.tue, schedule.wed, schedule.thu, schedule.fri, schedule.sat, schedule.sun]
+    }
+    
     @objc func addSchedule() {
         parentVC?.selectedSchedule = Schedule(
             mon: days[0],
@@ -110,6 +118,7 @@ extension ScheduleViewCotroller: UITableViewDataSource, UITableViewDelegate {
         }
         
         cell.tumbler.tag = indexPath.row
+        cell.tumbler.isOn = days[indexPath.row]
         cell.tumbler.addTarget(self, action: #selector(tumblerChanged), for: .valueChanged)
         return cell
     }

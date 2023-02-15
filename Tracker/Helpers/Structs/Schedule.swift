@@ -1,6 +1,6 @@
 import Foundation
 
-struct Schedule {
+struct Schedule: Codable {
     let mon: Bool
     let tue: Bool
     let wed: Bool
@@ -11,6 +11,10 @@ struct Schedule {
     
     func everyday() -> Bool {
         return mon && tue && wed && thu && fri && sat && sun
+    }
+    
+    func isEmpty() -> Bool {
+        return !mon && !tue && !wed && !thu && !fri && !sat && !sun
     }
     
     func text() -> String? {

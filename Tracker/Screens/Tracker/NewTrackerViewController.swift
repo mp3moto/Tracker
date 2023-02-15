@@ -5,14 +5,37 @@ class NewTrackerViewController: UIViewController {
     var selectedCategory: Int?
     var selectedSchedule: Schedule? {
         didSet {
+            checkState()
             trackerParamsTableView.reloadData()
         }
     }
+    private var selectedEmoji: String?
+    private var selectedColor: String?
+    
     let data = DataManagement()
     let trackerParamsTableView = UITableView()
     let trackerParamsTableViewValues: [String] = ["Категория", "Расписание"]
+    
+    let trackerName: UITextField = {
+        let field = UITextField()
+        field.placeholder = "Введите название трекера"
+        field.font = UIFont(name: "YSDisplay-Medium", size: 17)
+        field.layer.cornerRadius = 16
+        field.backgroundColor = UIColor(named: "YPGray")
+        field.clearButtonMode = .always
+        
+        let paddingView: UIView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 1))
+        field.leftView = paddingView
+        field.leftViewMode = .always
+        field.translatesAutoresizingMaskIntoConstraints = false
+        return field
+    }()
+    
     let emojiCollection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     let colorCollection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+    
+    let cancelButton = YPButton(text: "Отменить", destructive: true)
+    let createButton = YPButton(text: "Создать", destructive: false)
     
     let emoji: [String] = ["🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"]
     let colors: [String] = ["Sunset Orange", "West Side", "Azure Radiance", "Electric Violet", "Emerald", "Orchid", "Azalea", "Dodger Blue", "Turquoise", "Minsk", "Persimmon", "Carnation Pink", "Manhattan", "Cornflower Blue", "Violet", "Medium Purple", "Purple", "Soft Emerald"]
@@ -71,21 +94,7 @@ class NewTrackerViewController: UIViewController {
         /*----------------------------------------------------------------*/
         
         /*---------------------------TrackerName--------------------------*/
-        let trackerName: UITextField = {
-            let field = UITextField()
-            field.placeholder = "Введите название трекера"
-            field.font = UIFont(name: "YSDisplay-Medium", size: 17)
-            field.layer.cornerRadius = 16
-            field.backgroundColor = UIColor(named: "YPGray")
-            field.clearButtonMode = .always
-            
-            let paddingView: UIView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 1))
-            field.leftView = paddingView
-            field.leftViewMode = .always
-            field.translatesAutoresizingMaskIntoConstraints = false
-            return field
-        }()
-       
+        trackerName.addTarget(self, action: #selector(checkState), for: .allEditingEvents)
         pageContentView.addSubview(trackerName)
         
         NSLayoutConstraint.activate([
@@ -129,7 +138,7 @@ class NewTrackerViewController: UIViewController {
         
         pageContentView.addSubview(emojiCollection)
         pageContentView.addSubview(colorCollection)
-       
+
         NSLayoutConstraint.activate([
             emojiCollection.topAnchor.constraint(equalTo: trackerParamsTableView.bottomAnchor, constant: 0),
             emojiCollection.heightAnchor.constraint(equalToConstant: 240),
@@ -144,10 +153,10 @@ class NewTrackerViewController: UIViewController {
         /*----------------------------------------------------------------*/
         
         /*------------------------------Buttons---------------------------*/
-        let cancelButton = YPButton(text: "Отменить", destructive: true)
-        let createButton = YPButton(text: "Создать", destructive: false)
+        
         createButton.isEnabled = false
         cancelButton.addTarget(self, action: #selector(cancelCreation), for: .touchUpInside)
+        createButton.addTarget(self, action: #selector(createTracker), for: .touchUpInside)
         
         let stackView = UIStackView(arrangedSubviews: [cancelButton, createButton])
         stackView.axis = .horizontal
@@ -164,20 +173,44 @@ class NewTrackerViewController: UIViewController {
             stackView.bottomAnchor.constraint(equalTo: pageContentView.bottomAnchor)
         ])
         /*----------------------------------------------------------------*/
-         
+        
     }
     
     @objc func cancelCreation() {
         completion?()
     }
     
+    @objc private func createTracker() {
+        _ = data.addTracker(title: trackerName.text, emoji: selectedEmoji, color: selectedColor, schedule: selectedSchedule)
+        completion?()
+    }
+    
     @objc func setCategory(id: Int) {
         selectedCategory = data.categories?[id].id
+        checkState()
         trackerParamsTableView.reloadData()
+    }
+    
+    @objc func checkState() {
+        createButton.isEnabled = trackerIsReadyToBeCreated()
     }
     
     func setSchedule() {
         trackerParamsTableView.reloadData()
+    }
+    
+    func trackerIsReadyToBeCreated() -> Bool {
+        guard let category = selectedCategory,
+              let schedule = selectedSchedule,
+              let _ = selectedEmoji,
+              let _ = selectedColor
+        else { return false }
+        let trackerNameLength = trackerName.text?.count ?? 0
+        let trackerNameIsOK = trackerNameLength > 0 && trackerNameLength <= 38
+        let categoryIsOK = category > 0
+        let scheduleIsOK = !schedule.isEmpty()
+        
+        return trackerNameIsOK && categoryIsOK && scheduleIsOK
     }
 }
 
@@ -220,6 +253,7 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
         default:
             let scheduleVC = ScheduleViewCotroller()
             scheduleVC.parentVC = self
+            scheduleVC.schedule = selectedSchedule
             present(scheduleVC, animated: true)
         }
     }
@@ -283,10 +317,14 @@ extension NewTrackerViewController: UICollectionViewDataSource, UICollectionView
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         switch collectionView {
         case emojiCollection: guard let cell = collectionView.cellForItem(at: indexPath) as? EmojiCell else { return }
+            selectedEmoji = emoji[indexPath.row]
             cell.backgroundColor = UIColor(named: "YPGray")?.withAlphaComponent(1.0)
+            checkState()
         case colorCollection:
             guard let cell = collectionView.cellForItem(at: indexPath) as? ColorCell else { return }
+            selectedColor = colors[indexPath.row]
             cell.layer.borderWidth = 3
+            checkState()
         default: break
         }
     }

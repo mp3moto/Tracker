@@ -12,53 +12,11 @@ final class TrackerItem: UICollectionViewCell {
 
 final class TrackerListViewController: UIViewController {
     
-    let dataManagement = DataManagement()
-    //let categories = DataManagement().categories
+    let data = DataManagement()
     private let searchController = UISearchController(searchResultsController: nil)
+    private let collection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        //dataManagement.categories = nil
-        //print(dataManagement.categories)
-        view.backgroundColor = UIColor(named: "YPWhite")
-        configureNavigationBar()
-        
-        let layout = UICollectionViewFlowLayout()
-        
-        let collection = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collection.register(TrackerItem.self, forCellWithReuseIdentifier: "cell")
-        collection.translatesAutoresizingMaskIntoConstraints = false
-        
-        view.addSubview(collection)
-        
-        NSLayoutConstraint.activate([
-            collection.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            collection.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            collection.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            collection.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-        ])
-        
-        let noTrackersIndicatorView = createNoTrackersIndicator()
-        
-        collection.addSubview(noTrackersIndicatorView)
-        
-        NSLayoutConstraint.activate([
-            noTrackersIndicatorView.centerXAnchor.constraint(equalTo: collection.centerXAnchor),
-            noTrackersIndicatorView.centerYAnchor.constraint(equalTo: collection.centerYAnchor)
-        ])
-        /*
-        NotificationCenter.default.addObserver(
-            forName: NewTrackerViewController.DidCancelNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            guard let self = self else { return }
-            self.dismiss(animated: true)
-        }
-         */
-    }
-    
-    func createNoTrackersIndicator() -> UIView {
+    let noTrackersView: UIView = {
         let noTrackersIndicatorView = UIView()
         let noTrackersIndicatorImage = UIImageView(image: UIImage(named: "no trackers"))
         let noTrackersIndicatorLabel = UILabel()
@@ -88,10 +46,48 @@ final class TrackerListViewController: UIViewController {
             noTrackersIndicatorView.heightAnchor.constraint(equalToConstant: totalHeight)
         ])
         
-        
         return noTrackersIndicatorView
+    }()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        //dataManagement.categories = nil
+        //print(dataManagement.trackers)
+        view.backgroundColor = UIColor(named: "YPWhite")
+        configureNavigationBar()
+        
+        let layout = UICollectionViewFlowLayout()
+        
+        
+        collection.register(TrackerItem.self, forCellWithReuseIdentifier: "cell")
+        collection.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubview(collection)
+        
+        NSLayoutConstraint.activate([
+            collection.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            collection.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            collection.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            collection.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ])
+        
+        placeholderIfNeeded()
+        
     }
     
+    func placeholderIfNeeded() {
+        if data.trackers?.count == 0 {
+            collection.addSubview(noTrackersView)
+            NSLayoutConstraint.activate([
+                noTrackersView.centerXAnchor.constraint(equalTo: collection.centerXAnchor),
+                noTrackersView.centerYAnchor.constraint(equalTo: collection.centerYAnchor)
+            ])
+        } else {
+            if noTrackersView.isDescendant(of: collection) {
+                noTrackersView.removeFromSuperview()
+            }
+        }
+    }
     
     func configureNavigationBar() {
         let addTrackerButton = UIButton()

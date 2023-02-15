@@ -1,12 +1,47 @@
 import UIKit
 
 final class CategoriesViewCotroller: UIViewController {
-    
     let data = DataManagement()
     let categoriesTableView = UITableView()
     var lastCategoriesCount: Int = 0
     weak var parentVC: NewTrackerViewController?
     var categoryCompletion: (() -> Void)?
+    
+    let noCategoriesView: UIView = {
+        let noTrackersIndicatorView = UIView()
+        let noTrackersIndicatorImage = UIImageView(image: UIImage(named: "no trackers"))
+        let noTrackersIndicatorLabel = UILabel()
+        noTrackersIndicatorLabel.text = "Привычки и события можно\nобъединить по смыслу"
+        noTrackersIndicatorLabel.font = UIFont(name: "YSDisplay-Medium", size: 12)
+        noTrackersIndicatorLabel.numberOfLines = 2
+        noTrackersIndicatorLabel.textAlignment = .center
+        
+        noTrackersIndicatorView.translatesAutoresizingMaskIntoConstraints = false
+        noTrackersIndicatorImage.translatesAutoresizingMaskIntoConstraints = false
+        noTrackersIndicatorLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        noTrackersIndicatorView.addSubview(noTrackersIndicatorImage)
+        noTrackersIndicatorView.addSubview(noTrackersIndicatorLabel)
+        
+        let noTrackersIndicatorImageWidth = 80.0
+        let noTrackersIndicatorImageHeight = 80.0
+        let spaceBetweenImageAndLabel = 8.0
+        let noTrackersIndicatorLabelHeight = noTrackersIndicatorLabel.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
+        let totalHeight = noTrackersIndicatorImageHeight + spaceBetweenImageAndLabel + noTrackersIndicatorLabelHeight
+        
+        NSLayoutConstraint.activate([
+            noTrackersIndicatorImage.centerXAnchor.constraint(equalTo: noTrackersIndicatorView.centerXAnchor),
+            noTrackersIndicatorImage.topAnchor.constraint(equalTo: noTrackersIndicatorView.topAnchor),
+            noTrackersIndicatorImage.heightAnchor.constraint(equalToConstant: noTrackersIndicatorImageHeight),
+            noTrackersIndicatorImage.widthAnchor.constraint(equalToConstant: noTrackersIndicatorImageWidth),
+            noTrackersIndicatorLabel.topAnchor.constraint(equalTo: noTrackersIndicatorImage.bottomAnchor, constant: spaceBetweenImageAndLabel),
+            noTrackersIndicatorLabel.centerXAnchor.constraint(equalTo: noTrackersIndicatorImage.centerXAnchor),
+            noTrackersIndicatorLabel.heightAnchor.constraint(equalToConstant: 36),
+            noTrackersIndicatorView.heightAnchor.constraint(equalToConstant: totalHeight)
+        ])
+        
+        return noTrackersIndicatorView
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -70,22 +105,39 @@ final class CategoriesViewCotroller: UIViewController {
             //categoriesTableView.heightAnchor.constraint(equalToConstant: CGFloat(75 * categories.count))
         ])
         
+        placeholderIfNeeded()
+        
         /* --------------------------------------------------------------- */
     }
-    
+
     func updateCategories() {
+        placeholderIfNeeded()
         categoriesTableView.performBatchUpdates {
             var indexPathArray: [IndexPath] = []
-            if data.categoriesCount() > lastCategoriesCount {
-                for index in lastCategoriesCount..<data.categoriesCount() {
+            if data.count(for: "category") > lastCategoriesCount {
+                for index in lastCategoriesCount..<data.count(for: "category") {
                     indexPathArray.append(IndexPath(row: index, section: 0))
                 }
                 categoriesTableView.insertRows(at: indexPathArray, with: .automatic)
-                lastCategoriesCount = data.categoriesCount()
-            } else if data.categoriesCount() < lastCategoriesCount {
+                lastCategoriesCount = data.count(for: "category")
+            } else if data.count(for: "category") < lastCategoriesCount {
                 
             } else {
                 categoriesTableView.reloadData()
+            }
+        }
+    }
+    
+    func placeholderIfNeeded() {
+        if data.categories?.count == 0 {
+            categoriesTableView.addSubview(noCategoriesView)
+            NSLayoutConstraint.activate([
+                noCategoriesView.centerXAnchor.constraint(equalTo: categoriesTableView.centerXAnchor),
+                noCategoriesView.centerYAnchor.constraint(equalTo: categoriesTableView.centerYAnchor)
+            ])
+        } else {
+            if noCategoriesView.isDescendant(of: categoriesTableView) {
+                noCategoriesView.removeFromSuperview()
             }
         }
     }
@@ -95,7 +147,7 @@ final class CategoriesViewCotroller: UIViewController {
         addCategoryVC.completion = { [weak self] in
             self?.updateCategories()
         }
-        lastCategoriesCount = data.categoriesCount()
+        lastCategoriesCount = data.count(for: "category")
         present(addCategoryVC, animated: true)
     }
 }
@@ -114,7 +166,7 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
             cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         }
         
-        if indexPath.row == data.categoriesCount() - 1 {
+        if indexPath.row == data.count(for: "category") - 1 {
             cell.layer.cornerRadius = 16
             cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
             if indexPath.row == 0 {
@@ -136,12 +188,13 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
                         self?.updateCategories()
                     }
                     addCategoryVC.category = self?.data.categories?[indexPath.row]
-                    self?.lastCategoriesCount = self?.data.categoriesCount() ?? 0
+                    self?.lastCategoriesCount = self?.data.count(for: "category") ?? 0
                     self?.present(addCategoryVC, animated: true)
                 },
                 UIAction(title: "Удалить", attributes: .destructive) { [weak self] _ in
                     self?.data.categories?.remove(at: indexPath.row)
                     self?.categoriesTableView.deleteRows(at: [indexPath], with: .automatic)
+                    self?.placeholderIfNeeded()
                 }
             ])
         })
@@ -153,7 +206,6 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         parentVC?.setCategory(id: indexPath.row)
-        //categoryCompletion?()
         dismiss(animated: true)
     }
     
