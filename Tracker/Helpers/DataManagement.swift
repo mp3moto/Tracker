@@ -64,14 +64,13 @@ final class DataManagement {
         return id
     }
     
-    func addTracker(title: String?, emoji: String?, color: String?, schedule: Schedule?) -> Int {
-        print("addTracker called")
+    func addTracker(title: String, emoji: String, color: String, categoryId: Int, schedule: Schedule?) -> Int {
         let id = getNextId(for: "tracker")
         if trackers == nil {
             trackers = []
         }
-        trackers?.append(Tracker(id: id, title: title, emoji: emoji, color: color, schedule: schedule))
-        print("id = \(id)")
+        
+        trackers?.append(Tracker(id: id, title: title, emoji: emoji, color: color, categoryId: categoryId, schedule: schedule))
         return id
     }
     
@@ -97,4 +96,12 @@ final class DataManagement {
         }
     }
     
+    func getCategoryNameById(id: Int) -> String? {
+        if let index = categories?.firstIndex(where: { $0.id == id }) {
+            return categories?[index].name
+        } else {
+            return nil
+        }
+        
+    }
 }

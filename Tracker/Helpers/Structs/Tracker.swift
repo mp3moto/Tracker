@@ -2,9 +2,10 @@ import Foundation
 
 struct Tracker: Codable {
     let id: Int
-    let title: String?
-    let emoji: String?
-    let color: String?
+    let title: String
+    let emoji: String
+    let color: String
+    let categoryId: Int
     let schedule: Schedule?
 }
 

@@ -1,20 +1,11 @@
 import UIKit
 
-final class TrackerItem: UICollectionViewCell {
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
-
 final class TrackerListViewController: UIViewController {
     
     let data = DataManagement()
     private let searchController = UISearchController(searchResultsController: nil)
     private let collection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+    var categories: [TrackerCategory]?
     
     let noTrackersView: UIView = {
         let noTrackersIndicatorView = UIView()
@@ -51,28 +42,40 @@ final class TrackerListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        //dataManagement.categories = nil
-        //print(dataManagement.trackers)
         view.backgroundColor = UIColor(named: "YPWhite")
         configureNavigationBar()
+        categories = prepareCategories()
         
-        let layout = UICollectionViewFlowLayout()
+        //print(categories)
+        //print(data.getCategoryNameById(id: 5))
         
-        
-        collection.register(TrackerItem.self, forCellWithReuseIdentifier: "cell")
+        collection.register(TrackerListItem.self, forCellWithReuseIdentifier: TrackerListItem.reuseIdentifier)
         collection.translatesAutoresizingMaskIntoConstraints = false
+        collection.dataSource = self
+        collection.delegate = self
         
         view.addSubview(collection)
         
         NSLayoutConstraint.activate([
-            collection.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            collection.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            collection.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            collection.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             collection.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             collection.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
         
         placeholderIfNeeded()
-        
+    }
+    
+    func prepareCategories() -> [TrackerCategory] {
+        guard let categories = data.categories else { return [] }
+        var result: [TrackerCategory] = []
+        for category in categories {
+            let filteredTrackers = data.trackers?.filter { $0.categoryId == category.id } ?? []
+            if filteredTrackers.count > 0 {
+                result.append(TrackerCategory(categoryId: category.id, trackers: filteredTrackers))
+            }
+        }
+        return result
     }
     
     func placeholderIfNeeded() {
@@ -135,19 +138,36 @@ final class TrackerListViewController: UIViewController {
     }
 }
 
-extension TrackerListViewController: UICollectionViewDataSource {
+extension TrackerListViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return categories?.count ?? 0
+    }
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 0
+        return categories?[section].trackers.count ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as? TrackerItem else {
+        print(indexPath)
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerListItem.reuseIdentifier, for: indexPath) as? TrackerListItem else {
             return UICollectionViewCell()
         }
-        
         cell.prepareForReuse()
-        
+        cell.itemBackground.backgroundColor = UIColor(named: categories?[indexPath.section].trackers[indexPath.row].color ?? "YPGray")
+        cell.icon.text = categories?[indexPath.section].trackers[indexPath.row].emoji
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return 0
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 0
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: 167, height: 90)
     }
 }
 

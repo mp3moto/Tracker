@@ -181,7 +181,12 @@ class NewTrackerViewController: UIViewController {
     }
     
     @objc private func createTracker() {
-        _ = data.addTracker(title: trackerName.text, emoji: selectedEmoji, color: selectedColor, schedule: selectedSchedule)
+        guard let title = trackerName.text,
+              let emoji = selectedEmoji,
+              let color = selectedColor,
+              let categoryId = selectedCategory
+        else { return }
+        _ = data.addTracker(title: title, emoji: emoji, color: color, categoryId: categoryId, schedule: selectedSchedule)
         completion?()
     }
     
@@ -271,11 +276,13 @@ extension NewTrackerViewController: UICollectionViewDataSource, UICollectionView
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         switch collectionView {
         case emojiCollection: guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: EmojiCell.identifier, for: indexPath) as? EmojiCell else { return UICollectionViewCell() }
+            cell.prepareForReuse()
             cell.symbol.text = emoji[indexPath.row]
             cell.layer.cornerRadius = 16
             return cell
         case colorCollection:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ColorCell.identifier, for: indexPath) as? ColorCell else { return UICollectionViewCell() }
+            cell.prepareForReuse()
             cell.colorView.backgroundColor = UIColor(named: colors[indexPath.row])
             cell.layer.borderColor = UIColor(named: colors[indexPath.row])?.withAlphaComponent(0.3).cgColor
             cell.layer.cornerRadius = 12
