@@ -1,13 +1,13 @@
 import UIKit
 
 final class CategoriesViewCotroller: UIViewController {
-    let data = DataManagement()
-    let categoriesTableView = UITableView()
-    var lastCategoriesCount: Int = 0
+    private let data = DataManagement()
+    private let categoriesTableView = UITableView()
+    private var lastCategoriesCount: Int = 0
     weak var parentVC: NewTrackerViewController?
     var categoryCompletion: (() -> Void)?
     
-    let noCategoriesView: UIView = {
+    private let noCategoriesView: UIView = {
         let noTrackersIndicatorView = UIView()
         let noTrackersIndicatorImage = UIImageView(image: UIImage(named: "no trackers"))
         let noTrackersIndicatorLabel = UILabel()
@@ -88,7 +88,6 @@ final class CategoriesViewCotroller: UIViewController {
         /* -------------------------- TableView -------------------------- */
         
         categoriesTableView.translatesAutoresizingMaskIntoConstraints = false
-        //categoriesTableView.layer.cornerRadius = 16
         
         categoriesTableView.register(CategoryListCell.self, forCellReuseIdentifier: CategoryListCell.reuseIdentifier)
         
@@ -102,7 +101,6 @@ final class CategoriesViewCotroller: UIViewController {
             categoriesTableView.bottomAnchor.constraint(equalTo: addCategoryButton.topAnchor, constant: -24),
             categoriesTableView.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -32),
             categoriesTableView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            //categoriesTableView.heightAnchor.constraint(equalToConstant: CGFloat(75 * categories.count))
         ])
         
         placeholderIfNeeded()
@@ -110,7 +108,7 @@ final class CategoriesViewCotroller: UIViewController {
         /* --------------------------------------------------------------- */
     }
 
-    func updateCategories() {
+    private func updateCategories() {
         placeholderIfNeeded()
         categoriesTableView.performBatchUpdates {
             var indexPathArray: [IndexPath] = []
@@ -128,8 +126,8 @@ final class CategoriesViewCotroller: UIViewController {
         }
     }
     
-    func placeholderIfNeeded() {
-        if data.categories?.count == 0 {
+    private func placeholderIfNeeded() {
+        if data.categories.count == 0 {
             categoriesTableView.addSubview(noCategoriesView)
             NSLayoutConstraint.activate([
                 noCategoriesView.centerXAnchor.constraint(equalTo: categoriesTableView.centerXAnchor),
@@ -142,7 +140,7 @@ final class CategoriesViewCotroller: UIViewController {
         }
     }
     
-    @objc func addCategory() {
+    @objc private func addCategory() {
         let addCategoryVC = AddCategoryViewController()
         addCategoryVC.completion = { [weak self] in
             self?.updateCategories()
@@ -154,13 +152,16 @@ final class CategoriesViewCotroller: UIViewController {
 
 extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return data.categories?.count ?? 0
+        return data.categories.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: CategoryListCell.reuseIdentifier, for: indexPath) as? CategoryListCell else { return CategoryListCell() }
-        cell.cellText = data.categories?[indexPath.row].name
+        cell.cellText = data.categories[indexPath.row].name
         cell.layer.maskedCorners = []
+        if parentVC?.selectedCategory ?? 0 == data.categories[indexPath.row].id {
+            cell.checkmarkImage.isHidden = false
+        }
         if indexPath.row == 0 {
             cell.layer.cornerRadius = 16
             cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
@@ -187,12 +188,12 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
                     addCategoryVC.completion = { [weak self] in
                         self?.updateCategories()
                     }
-                    addCategoryVC.category = self?.data.categories?[indexPath.row]
+                    addCategoryVC.category = self?.data.categories[indexPath.row]
                     self?.lastCategoriesCount = self?.data.count(for: "category") ?? 0
                     self?.present(addCategoryVC, animated: true)
                 },
                 UIAction(title: "Удалить", attributes: .destructive) { [weak self] _ in
-                    self?.data.categories?.remove(at: indexPath.row)
+                    self?.data.categories.remove(at: indexPath.row)
                     self?.categoriesTableView.deleteRows(at: [indexPath], with: .automatic)
                     self?.placeholderIfNeeded()
                 }

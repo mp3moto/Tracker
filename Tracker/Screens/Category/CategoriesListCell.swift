@@ -9,7 +9,7 @@ final class CategoryListCell: UITableViewCell {
         }
     }
     
-    let containerView: UIView = {
+    private let containerView: UIView = {
       let view = UIView()
       view.translatesAutoresizingMaskIntoConstraints = false
       return view
@@ -21,7 +21,7 @@ final class CategoryListCell: UITableViewCell {
         return image
     }()
     
-    let titleLabel: UILabel = {
+    private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont(name: "YSDisplay-Medium", size: 17)
         label.textColor = UIColor(named: "YPBlack")
@@ -41,7 +41,8 @@ final class CategoryListCell: UITableViewCell {
         contentView.addSubview(containerView)
         containerView.addSubview(titleLabel)
         
-        //containerView.addSubview(checkmarkImage)
+        checkmarkImage.isHidden = true
+        containerView.addSubview(checkmarkImage)
         
         NSLayoutConstraint.activate([
             containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
@@ -50,12 +51,12 @@ final class CategoryListCell: UITableViewCell {
             containerView.heightAnchor.constraint(equalToConstant: 75),
 
             titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor)
+            titleLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
 
-            /*chevronImage.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-            chevronImage.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
-            chevronImage.widthAnchor.constraint(equalToConstant: 24),
-            chevronImage.heightAnchor.constraint(equalToConstant: 24)*/
+            checkmarkImage.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            checkmarkImage.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
+            checkmarkImage.widthAnchor.constraint(equalToConstant: 24),
+            checkmarkImage.heightAnchor.constraint(equalToConstant: 24)
         ])
     }
     

@@ -1,11 +1,13 @@
 import UIKit
 
 final class ScheduleViewCotroller: UIViewController {
-    let scheduleTableView = UITableView()
-    let daysOfWeek: [String] = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
+    private let scheduleTableView = UITableView()
+    private let daysOfWeek: [String] = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     private var days: [Bool] = [false, false, false, false, false, false, false]
     weak var parentVC: NewTrackerViewController?
     var schedule: Schedule?
+    
+    private let addScheduleButton = YPButton(text: "Готово", destructive: false)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,14 +43,14 @@ final class ScheduleViewCotroller: UIViewController {
         /*----------------------------------------------------------------*/
         
         /* ---------------------------- Button -------------------------- */
-        let addCategoryButton = YPButton(text: "Готово", destructive: false)
-        addCategoryButton.addTarget(self, action: #selector(addSchedule), for: .touchUpInside)
-        view.addSubview(addCategoryButton)
+        addScheduleButton.addTarget(self, action: #selector(addSchedule), for: .touchUpInside)
+        addScheduleButton.isEnabled = false
+        view.addSubview(addScheduleButton)
         NSLayoutConstraint.activate([
-            addCategoryButton.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -40),
-            addCategoryButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            addCategoryButton.heightAnchor.constraint(equalToConstant: 60),
-            addCategoryButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16)
+            addScheduleButton.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -40),
+            addScheduleButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            addScheduleButton.heightAnchor.constraint(equalToConstant: 60),
+            addScheduleButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16)
         ])
         /* --------------------------------------------------------------- */
         
@@ -65,19 +67,28 @@ final class ScheduleViewCotroller: UIViewController {
         
         NSLayoutConstraint.activate([
             scheduleTableView.topAnchor.constraint(equalTo: titleView.bottomAnchor, constant: 24),
-            scheduleTableView.bottomAnchor.constraint(equalTo: addCategoryButton.topAnchor, constant: -24),
+            scheduleTableView.bottomAnchor.constraint(equalTo: addScheduleButton.topAnchor, constant: -24),
             scheduleTableView.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -32),
             scheduleTableView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
         ])
-        
         /* --------------------------------------------------------------- */
+        
+        checkState()
     }
     
-    func convert(schedule: Schedule) -> [Bool] {
+    private func convert(schedule: Schedule) -> [Bool] {
         return [schedule.mon, schedule.tue, schedule.wed, schedule.thu, schedule.fri, schedule.sat, schedule.sun]
     }
     
-    @objc func addSchedule() {
+    private func checkState() {
+        addScheduleButton.isEnabled = scheduleIsReadyToBeCreated()
+    }
+    
+    private func scheduleIsReadyToBeCreated() -> Bool {
+        return days.filter { $0 == true }.count > 0
+    }
+    
+    @objc private func addSchedule() {
         parentVC?.selectedSchedule = Schedule(
             mon: days[0],
             tue: days[1],
@@ -90,8 +101,9 @@ final class ScheduleViewCotroller: UIViewController {
         dismiss(animated: true)
     }
     
-    @objc func tumblerChanged(_ sender: UISwitch) {
+    @objc private func tumblerChanged(_ sender: UISwitch) {
         days[sender.tag] = sender.isOn
+        checkState()
     }
 }
 

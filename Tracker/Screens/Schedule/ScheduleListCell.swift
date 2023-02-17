@@ -9,7 +9,7 @@ final class ScheduleListCell: UITableViewCell {
         }
     }
     
-    let containerView: UIView = {
+    private let containerView: UIView = {
       let view = UIView()
       view.translatesAutoresizingMaskIntoConstraints = false
       return view
@@ -40,7 +40,6 @@ final class ScheduleListCell: UITableViewCell {
         
         contentView.addSubview(containerView)
         containerView.addSubview(titleLabel)
-        
         containerView.addSubview(tumbler)
         
         NSLayoutConstraint.activate([

@@ -1,7 +1,8 @@
 import UIKit
 
 final class CreateNewTrackerViewController: UIViewController {
-    var completion: (() -> Void)?
+    var completionCancel: (() -> Void)?
+    var completionCreate: (() -> Void)?
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(named: "YPWhite")
@@ -47,27 +48,27 @@ final class CreateNewTrackerViewController: UIViewController {
             menuView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             menuView.heightAnchor.constraint(equalToConstant: 136)
         ])
-        /*
-        NotificationCenter.default.addObserver(
-            forName: NewTrackerViewController.DidCancelNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            guard let self = self else { return }
-            self.dismiss(animated: true)
-        }
-         */
     }
     
-    @objc func addNewHabit() {
-        let newHabitVC = NewTrackerViewController()
-        newHabitVC.completion = { [weak self] in
-            self?.completion?()
+    @objc private func addNewHabit() {
+        let newHabitVC = NewTrackerViewController(trackerType: "habit")
+        newHabitVC.completionCancel = { [weak self] in
+            self?.completionCancel?()
+        }
+        newHabitVC.completionCreate = { [weak self] in
+            self?.completionCreate?()
         }
         present(newHabitVC, animated: true)
     }
     
-    @objc func addNewEvent() {
-        print("addNewEvent called")
+    @objc private func addNewEvent() {
+        let newEventVC = NewTrackerViewController(trackerType: "event")
+        newEventVC.completionCancel = { [weak self] in
+            self?.completionCancel?()
+        }
+        newEventVC.completionCreate = { [weak self] in
+            self?.completionCreate?()
+        }
+        present(newEventVC, animated: true)
     }
 }

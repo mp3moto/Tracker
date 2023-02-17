@@ -15,25 +15,25 @@ final class TrackerListCell: UITableViewCell {
         }
     }
     
-    let containerView: UIView = {
+    private let containerView: UIView = {
       let view = UIView()
       view.translatesAutoresizingMaskIntoConstraints = false
       //view.clipsToBounds = true
       return view
     }()
     
-    let chevronImage: UIImageView = {
+    private let chevronImage: UIImageView = {
         let image = UIImageView(image: UIImage(named: "chevron.right"))
         return image
     }()
     
-    let cellTextArea: UIView = {
+    private let cellTextArea: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
-    let titleLabel: UILabel = {
+    private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont(name: "YSDisplay-Medium", size: 17)
         label.textColor = UIColor(named: "YPBlack")
@@ -41,7 +41,7 @@ final class TrackerListCell: UITableViewCell {
         return label
     }()
     
-    let selectedValueLabel: UILabel = {
+    private let selectedValueLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont(name: "YSDisplay-Medium", size: 17)
         label.textColor = UIColor(named: "YPCellSelectedValue")
@@ -86,7 +86,7 @@ final class TrackerListCell: UITableViewCell {
             selectedValueLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor),
 
             chevronImage.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-            chevronImage.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
+            chevronImage.centerYAnchor.constraint(equalTo: cellTextArea.centerYAnchor),
             chevronImage.widthAnchor.constraint(equalToConstant: 24),
             chevronImage.heightAnchor.constraint(equalToConstant: 24)
         ])

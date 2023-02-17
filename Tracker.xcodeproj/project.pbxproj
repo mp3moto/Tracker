@@ -13,7 +13,6 @@
 		948E12BE29975677002BD4D8 /* EmojiCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 948E12BD29975677002BD4D8 /* EmojiCell.swift */; };
 		948E12C029977400002BD4D8 /* CollectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 948E12BF29977400002BD4D8 /* CollectionHeader.swift */; };
 		948E12C22997B858002BD4D8 /* ColorCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 948E12C12997B858002BD4D8 /* ColorCell.swift */; };
-		948E12C429980793002BD4D8 /* TestScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 948E12C329980793002BD4D8 /* TestScreen.swift */; };
 		948E12C7299905E8002BD4D8 /* CategoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 948E12C6299905E8002BD4D8 /* CategoriesViewController.swift */; };
 		948E12C92999139D002BD4D8 /* CategoriesListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 948E12C82999139D002BD4D8 /* CategoriesListCell.swift */; };
 		948E12CB2999E972002BD4D8 /* AddCategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 948E12CA2999E972002BD4D8 /* AddCategoryViewController.swift */; };
@@ -35,6 +34,8 @@
 		94BD1407299B33240003560C /* ScheduleViewCotroller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BD1406299B33240003560C /* ScheduleViewCotroller.swift */; };
 		94BD1409299B35A20003560C /* ScheduleListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BD1408299B35A20003560C /* ScheduleListCell.swift */; };
 		94BD140B299B51E90003560C /* Schedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BD140A299B51E90003560C /* Schedule.swift */; };
+		94C56F33299E0E5D0061F4FA /* Label.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C56F32299E0E5D0061F4FA /* Label.swift */; };
+		94C56F35299E6EFB0061F4FA /* DoneButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C56F34299E6EFB0061F4FA /* DoneButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,7 +45,6 @@
 		948E12BD29975677002BD4D8 /* EmojiCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiCell.swift; sourceTree = "<group>"; };
 		948E12BF29977400002BD4D8 /* CollectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionHeader.swift; sourceTree = "<group>"; };
 		948E12C12997B858002BD4D8 /* ColorCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorCell.swift; sourceTree = "<group>"; };
-		948E12C329980793002BD4D8 /* TestScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestScreen.swift; sourceTree = "<group>"; };
 		948E12C6299905E8002BD4D8 /* CategoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesViewController.swift; sourceTree = "<group>"; };
 		948E12C82999139D002BD4D8 /* CategoriesListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesListCell.swift; sourceTree = "<group>"; };
 		948E12CA2999E972002BD4D8 /* AddCategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCategoryViewController.swift; sourceTree = "<group>"; };
@@ -68,6 +68,8 @@
 		94BD1406299B33240003560C /* ScheduleViewCotroller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleViewCotroller.swift; sourceTree = "<group>"; };
 		94BD1408299B35A20003560C /* ScheduleListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleListCell.swift; sourceTree = "<group>"; };
 		94BD140A299B51E90003560C /* Schedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Schedule.swift; sourceTree = "<group>"; };
+		94C56F32299E0E5D0061F4FA /* Label.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Label.swift; sourceTree = "<group>"; };
+		94C56F34299E6EFB0061F4FA /* DoneButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,7 +139,6 @@
 				94A2D7452988E4020051AD19 /* SceneDelegate.swift */,
 				94A2D7472988E4020051AD19 /* SplashViewController.swift */,
 				94A2D7512988E4030051AD19 /* Info.plist */,
-				948E12C329980793002BD4D8 /* TestScreen.swift */,
 			);
 			path = Tracker;
 			sourceTree = "<group>";
@@ -168,6 +169,7 @@
 			isa = PBXGroup;
 			children = (
 				94A2D764298BCB2E0051AD19 /* Font.swift */,
+				94C56F32299E0E5D0061F4FA /* Label.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -176,6 +178,7 @@
 			isa = PBXGroup;
 			children = (
 				94A2D767298CF5370051AD19 /* YPButton.swift */,
+				94C56F34299E6EFB0061F4FA /* DoneButton.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -292,7 +295,9 @@
 				94A2D7482988E4020051AD19 /* SplashViewController.swift in Sources */,
 				94A2D7582988EA550051AD19 /* OnboardingVC.swift in Sources */,
 				94A2D768298CF5370051AD19 /* YPButton.swift in Sources */,
+				94C56F35299E6EFB0061F4FA /* DoneButton.swift in Sources */,
 				94A2D765298BCB2E0051AD19 /* Font.swift in Sources */,
+				94C56F33299E0E5D0061F4FA /* Label.swift in Sources */,
 				948E12C92999139D002BD4D8 /* CategoriesListCell.swift in Sources */,
 				94A2D78A29922D380051AD19 /* TrackerListVC.swift in Sources */,
 				948E12C029977400002BD4D8 /* CollectionHeader.swift in Sources */,
@@ -304,7 +309,6 @@
 				946AEF33299D42060088572A /* TrackerListItem.swift in Sources */,
 				94A2D7902994D1A90051AD19 /* NewTrackerViewController.swift in Sources */,
 				947132C52997454700FE8955 /* TrackerListCell.swift in Sources */,
-				948E12C429980793002BD4D8 /* TestScreen.swift in Sources */,
 				948E12CB2999E972002BD4D8 /* AddCategoryViewController.swift in Sources */,
 				948E12C22997B858002BD4D8 /* ColorCell.swift in Sources */,
 				94A2D7462988E4020051AD19 /* SceneDelegate.swift in Sources */,

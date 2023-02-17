@@ -3,13 +3,9 @@ import UIKit
 final class AddCategoryViewController: UIViewController {
     
     var completion: (() -> Void)?
-    var category: Category? {
-        didSet {
-            
-        }
-    }
+    var category: Category?
     
-    let categoryName: UITextField = {
+    private let categoryName: UITextField = {
         let field = UITextField()
         field.placeholder = "Введите название категории"
         field.font = UIFont(name: "YSDisplay-Medium", size: 17)
@@ -25,7 +21,7 @@ final class AddCategoryViewController: UIViewController {
         return field
     }()
     
-    let addCategoryButton = YPButton(text: "Добавить категорию", destructive: false)
+    private let addCategoryButton = YPButton(text: "Добавить категорию", destructive: false)
     
     override func viewDidLoad() {
         view.backgroundColor = UIColor(named: "YPWhite")
@@ -87,12 +83,11 @@ final class AddCategoryViewController: UIViewController {
             categoryName.text = category.name
             addCategoryButton.removeTarget(self, action: #selector(addCategory), for: .touchUpInside)
             addCategoryButton.tag = category.id
-            //addCategoryButton.additionalParams = [categoryName.text ?? "Без названия"]
             addCategoryButton.addTarget(self, action: #selector(updateCategory), for: .touchUpInside)
         }
     }
     
-    @objc func textFieldChanged(_ sender: UITextInput) {
+    @objc private func textFieldChanged(_ sender: UITextInput) {
         guard let textLength = categoryName.text?.count,
               textLength > 0,
               textLength < 25 else {
@@ -102,14 +97,14 @@ final class AddCategoryViewController: UIViewController {
         addCategoryButton.isEnabled = true
     }
     
-    @objc func addCategory() {
+    @objc private func addCategory() {
         let data = DataManagement()
         _ = data.addCategory(name: categoryName.text ?? "Без названия")
         completion?()
         dismiss(animated: true)
     }
     
-    @objc func updateCategory(sender: YPButton) {
+    @objc private func updateCategory(sender: YPButton) {
         let data = DataManagement()
         data.updateCategory(id: sender.tag, name: self.categoryName.text ?? "Без названия")
         completion?()

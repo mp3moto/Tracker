@@ -17,6 +17,22 @@ struct Schedule: Codable {
         return !mon && !tue && !wed && !thu && !fri && !sat && !sun
     }
     
+    func daysOfweek() -> [Int] {
+        var daysOfWeek: [Int] = []
+        if everyday() {
+            return [1,2,3,4,5,6,7]
+        } else {
+            if mon { daysOfWeek.append(2) }
+            if tue { daysOfWeek.append(3) }
+            if wed { daysOfWeek.append(4) }
+            if thu { daysOfWeek.append(5) }
+            if fri { daysOfWeek.append(6) }
+            if sat { daysOfWeek.append(7) }
+            if sun { daysOfWeek.append(1) }
+            return daysOfWeek
+        }
+    }
+    
     func text() -> String? {
         if everyday() {
             return "Каждый день"

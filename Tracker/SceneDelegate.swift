@@ -1,10 +1,3 @@
-//
-//  SceneDelegate.swift
-//  Tracker
-//
-//  Created by Ренат on 31.01.2023.
-//
-
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
@@ -15,18 +8,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         let window = UIWindow(windowScene: windowScene)
-        //let onboardingVC = OnboardingViewController()
-        //window.rootViewController = onboardingVC
-        let tabBarVC = TabBarViewController()
-        window.rootViewController = tabBarVC
-        //let vc1 = TrackerListViewController()
-        //window.rootViewController = vc1
-        //let newTracker = NewTrackerViewController()
-        //window.rootViewController = newTracker
-        //let splash = SplashViewController()
-        //window.rootViewController = splash
-        //let test = TestScreen()
-        //window.rootViewController = test
+        let onboardingVC = OnboardingViewController()
+        window.rootViewController = onboardingVC
         self.window = window
         window.makeKeyAndVisible()
     }

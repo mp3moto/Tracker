@@ -16,7 +16,37 @@ final class TrackerListItem: UICollectionViewCell {
         return label
     }()
     
+    let title: UILabel = {
+        let label = UILabel()
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.minimumLineHeight = CGFloat(16)
+        paragraphStyle.maximumLineHeight = CGFloat(16)
+        label.attributedText = NSAttributedString(
+            string: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            attributes: [
+                .paragraphStyle : paragraphStyle
+            ]
+        )
+        
+        label.font = UIFont(name: "YSDisplay-Medium", size: 12)
+        label.textColor = .white
+        label.numberOfLines = 2
+        
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
     
+    let doneButton = DoneButton()
+    
+    let doneLabel: UILabel = {
+        let label = UILabel()
+        label.text = "0 дней"
+        label.font = UIFont(name: "YSDisplay-Medium", size: 12)
+        label.textColor = UIColor(named: "YPBlack")
+        label.translatesAutoresizingMaskIntoConstraints = false
+        
+        return label
+    }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -40,15 +70,27 @@ final class TrackerListItem: UICollectionViewCell {
         }()
         
         contentView.addSubview(itemBackground)
-        contentView.addSubview(iconView)
+        itemBackground.addSubview(iconView)
+        itemBackground.addSubview(title)
+        contentView.addSubview(doneButton)
+        contentView.addSubview(doneLabel)
         
         NSLayoutConstraint.activate([
-            itemBackground.widthAnchor.constraint(equalToConstant: 167),
+            itemBackground.widthAnchor.constraint(equalTo: contentView.widthAnchor),
             itemBackground.heightAnchor.constraint(equalToConstant: 90),
             itemBackground.topAnchor.constraint(equalTo: contentView.topAnchor),
             itemBackground.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             iconView.topAnchor.constraint(equalTo: itemBackground.topAnchor, constant: 12),
-            iconView.leadingAnchor.constraint(equalTo: itemBackground.leadingAnchor, constant: 12)
+            iconView.leadingAnchor.constraint(equalTo: itemBackground.leadingAnchor, constant: 12),
+            title.leadingAnchor.constraint(equalTo: itemBackground.leadingAnchor, constant: 12),
+            title.trailingAnchor.constraint(equalTo: itemBackground.trailingAnchor, constant: -12),
+            title.bottomAnchor.constraint(equalTo: itemBackground.bottomAnchor, constant: -12),
+            doneButton.topAnchor.constraint(equalTo: itemBackground.bottomAnchor, constant: 8),
+            doneButton.trailingAnchor.constraint(equalTo: itemBackground.trailingAnchor, constant: -12),
+            doneButton.widthAnchor.constraint(equalToConstant: 34),
+            doneButton.heightAnchor.constraint(equalToConstant: 34),
+            doneLabel.leadingAnchor.constraint(equalTo: itemBackground.leadingAnchor, constant: 12),
+            doneLabel.centerYAnchor.constraint(equalTo: doneButton.centerYAnchor)
         ])
     }
     

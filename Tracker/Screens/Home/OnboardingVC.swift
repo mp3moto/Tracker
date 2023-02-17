@@ -1,19 +1,11 @@
 import UIKit
 
-protocol OnboardingViewControllerDelegate: AnyObject {
-    func pageViewController(_ pageViewController: OnboardingViewController, didUpdatePageCount count: Int)
-    func pageViewController(_ pageViewController: OnboardingViewController, didUpdatePageIndex index: Int)
-}
-
 final class OnboardingViewController: UIPageViewController {
     
     private let onboarding_01 = OnboardingViewControllerPage(backgroundImage: "onboardingPage1", pageText: "Отслеживайте только то, что хотите", buttonText: "Вот это технологии!")
     private let onboarding_02 = OnboardingViewControllerPage(backgroundImage: "onboardingPage2", pageText: "Даже если это не литры воды и йога", buttonText: "Вот это технологии!")
     
     private let pageControl = UIPageControl()
-    
-    weak var delegate1: OnboardingViewControllerDelegate?
-    
     private var orderedViewControllers: [UIViewController] = []
     
     init() {
@@ -59,12 +51,10 @@ extension OnboardingViewController: UIPageViewControllerDelegate {
     }
     
     func pageViewController(_ pageViewController: OnboardingViewController, didUpdatePageCount count: Int) {
-        print("didUpdatePageCount called")
         pageControl.numberOfPages = count
     }
     
     func pageViewController(_ pageViewController: OnboardingViewController, didUpdatePageIndex index: Int) {
-        print("didUpdatePageIndex called")
         pageControl.currentPage = index
     }
 }
@@ -75,7 +65,6 @@ extension OnboardingViewController: UIPageViewControllerDataSource {
         guard let viewControllerIndex = orderedViewControllers.firstIndex(of: viewController) else { return nil }
         
         let prevIndex = viewControllerIndex - 1
-        
         guard !(prevIndex < 0) else { return nil }
         
         return orderedViewControllers[prevIndex]
@@ -116,10 +105,19 @@ class OnboardingViewControllerPage: UIViewController {
         setup()
     }
     
+    @objc private func showHomeScreen() {
+        let homeVC = TabBarViewController()
+        homeVC.modalPresentationStyle = .fullScreen
+        homeVC.modalTransitionStyle = .coverVertical
+        present(homeVC, animated: true)
+    }
+    
     func setup() {
         let bgImage = UIImageView(image: UIImage(named: backgroundImage))
         let label = UILabel()
         let button = YPButton(text: "Вот это технологии!", destructive: false)
+        
+        button.addTarget(self, action: #selector(showHomeScreen), for: .touchUpInside)
         
         label.text = pageText
         label.font = UIFont(name: "YSDisplay-Bold", size: 32)
