@@ -82,7 +82,7 @@ final class AddCategoryViewController: UIViewController {
             addCategoryButton.setTitle("Готово", for: .normal)
             categoryName.text = category.name
             addCategoryButton.removeTarget(self, action: #selector(addCategory), for: .touchUpInside)
-            addCategoryButton.tag = category.id
+            addCategoryButton.tag = Int(category.id)
             addCategoryButton.addTarget(self, action: #selector(updateCategory), for: .touchUpInside)
         }
     }
@@ -99,9 +99,13 @@ final class AddCategoryViewController: UIViewController {
     
     @objc private func addCategory() {
         let data = DataManagement()
-        _ = data.addCategory(name: categoryName.text ?? "Без названия")
-        completion?()
-        dismiss(animated: true)
+        do {
+            try _ = data.addCategory(name: categoryName.text ?? "Без названия")
+            completion?()
+            //dismiss(animated: true)
+        } catch let error {
+            print(error.localizedDescription)
+        }
     }
     
     @objc private func updateCategory(sender: YPButton) {

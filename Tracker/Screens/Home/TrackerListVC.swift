@@ -126,7 +126,7 @@ final class TrackerListViewController: UIViewController {
                 filteredTrackers = data.trackers.filter { ($0.categoryId == category.id && $0.schedule != nil && $0.schedule!.daysOfweek().contains(weekDay)) || $0.categoryId == category.id && $0.schedule == nil }
             }
             if filteredTrackers.count > 0 {
-                result.append(TrackerCategory(categoryId: category.id, trackers: filteredTrackers))
+                result.append(TrackerCategory(categoryId: Int(category.id), trackers: filteredTrackers))
             }
         }
         return result
@@ -285,7 +285,7 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
         }
         
         cell.doneButton.backgroundColor = UIColor(named: tracker.color)
-        cell.doneButton.tag = tracker.id
+        cell.doneButton.tag = Int(tracker.id)
         cell.doneButton.addTarget(self, action: #selector(checkDone), for: .touchUpInside)
         return cell
     }

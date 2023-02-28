@@ -4,7 +4,7 @@ class NewTrackerViewController: UIViewController {
     private let trackerType: String
     var completionCancel: (() -> Void)?
     var completionCreate: (() -> Void)?
-    var selectedCategory: Int?
+    var selectedCategory: Int32?
     var selectedSchedule: Schedule? {
         didSet {
             checkState()
@@ -208,12 +208,12 @@ class NewTrackerViewController: UIViewController {
               let color = selectedColor,
               let categoryId = selectedCategory
         else { return }
-        _ = data.addTracker(title: title, emoji: emoji, color: color, categoryId: categoryId, schedule: selectedSchedule)
+        _ = data.addTracker(title: title, emoji: emoji, color: color, categoryId: Int(categoryId), schedule: selectedSchedule)
         completionCreate?()
     }
     
-    @objc func setCategory(id: Int) {
-        selectedCategory = data.categories[id].id
+    @objc func setCategory(id: Int32) {
+        selectedCategory = data.categories[Int(id)].id
         checkState()
         trackerParamsTableView.reloadData()
     }

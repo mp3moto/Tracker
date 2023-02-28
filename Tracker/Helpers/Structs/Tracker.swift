@@ -1,7 +1,7 @@
 import Foundation
 
 struct Tracker: Codable {
-    let id: Int
+    let id: Int32
     let title: String
     let emoji: String
     let color: String

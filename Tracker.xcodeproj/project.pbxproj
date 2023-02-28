@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		945382A029AA6E910080AF2D /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 9453829E29AA6E910080AF2D /* DataModel.xcdatamodeld */; };
+		945382A329AA6F070080AF2D /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945382A229AA6F070080AF2D /* DataStore.swift */; };
 		946AEF30299CE32C0088572A /* Tracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946AEF2F299CE32C0088572A /* Tracker.swift */; };
 		946AEF33299D42060088572A /* TrackerListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946AEF32299D42060088572A /* TrackerListItem.swift */; };
 		947132C52997454700FE8955 /* TrackerListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947132C42997454700FE8955 /* TrackerListCell.swift */; };
@@ -39,6 +41,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9453829F29AA6E910080AF2D /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
+		945382A229AA6F070080AF2D /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
 		946AEF2F299CE32C0088572A /* Tracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tracker.swift; sourceTree = "<group>"; };
 		946AEF32299D42060088572A /* TrackerListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerListItem.swift; sourceTree = "<group>"; };
 		947132C42997454700FE8955 /* TrackerListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerListCell.swift; sourceTree = "<group>"; };
@@ -83,6 +87,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		945382A129AA6EEF0080AF2D /* DataStore */ = {
+			isa = PBXGroup;
+			children = (
+				945382A229AA6F070080AF2D /* DataStore.swift */,
+			);
+			path = DataStore;
+			sourceTree = "<group>";
+		};
 		946AEF31299D40F80088572A /* Home */ = {
 			isa = PBXGroup;
 			children = (
@@ -132,6 +144,8 @@
 		94A2D7422988E4020051AD19 /* Tracker */ = {
 			isa = PBXGroup;
 			children = (
+				945382A129AA6EEF0080AF2D /* DataStore */,
+				9453829E29AA6E910080AF2D /* DataModel.xcdatamodeld */,
 				94A2D78B2994A6480051AD19 /* Screens */,
 				94A2D762298BCAC10051AD19 /* Helpers */,
 				94A2D759298BC46A0051AD19 /* Resources */,
@@ -295,6 +309,7 @@
 				94A2D7482988E4020051AD19 /* SplashViewController.swift in Sources */,
 				94A2D7582988EA550051AD19 /* OnboardingVC.swift in Sources */,
 				94A2D768298CF5370051AD19 /* YPButton.swift in Sources */,
+				945382A329AA6F070080AF2D /* DataStore.swift in Sources */,
 				94C56F35299E6EFB0061F4FA /* DoneButton.swift in Sources */,
 				94A2D765298BCB2E0051AD19 /* Font.swift in Sources */,
 				94C56F33299E0E5D0061F4FA /* Label.swift in Sources */,
@@ -311,6 +326,7 @@
 				947132C52997454700FE8955 /* TrackerListCell.swift in Sources */,
 				948E12CB2999E972002BD4D8 /* AddCategoryViewController.swift in Sources */,
 				948E12C22997B858002BD4D8 /* ColorCell.swift in Sources */,
+				945382A029AA6E910080AF2D /* DataModel.xcdatamodeld in Sources */,
 				94A2D7462988E4020051AD19 /* SceneDelegate.swift in Sources */,
 				948E12C7299905E8002BD4D8 /* CategoriesViewController.swift in Sources */,
 			);
@@ -524,6 +540,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		9453829E29AA6E910080AF2D /* DataModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				9453829F29AA6E910080AF2D /* DataModel.xcdatamodel */,
+			);
+			currentVersion = 9453829F29AA6E910080AF2D /* DataModel.xcdatamodel */;
+			path = DataModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 94A2D7382988E4020051AD19 /* Project object */;
 }
