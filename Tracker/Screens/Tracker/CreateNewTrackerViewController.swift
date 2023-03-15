@@ -1,8 +1,19 @@
 import UIKit
 
 final class CreateNewTrackerViewController: UIViewController {
+    private let store: DataStore
     var completionCancel: (() -> Void)?
     var completionCreate: (() -> Void)?
+    
+    init(store: DataStore) {
+        self.store = store
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(named: "YPWhite")
@@ -51,7 +62,7 @@ final class CreateNewTrackerViewController: UIViewController {
     }
     
     @objc private func addNewHabit() {
-        let newHabitVC = NewTrackerViewController(trackerType: "habit")
+        let newHabitVC = NewTrackerViewController(trackerType: "habit", store: store)
         newHabitVC.completionCancel = { [weak self] in
             self?.completionCancel?()
         }
@@ -62,7 +73,7 @@ final class CreateNewTrackerViewController: UIViewController {
     }
     
     @objc private func addNewEvent() {
-        let newEventVC = NewTrackerViewController(trackerType: "event")
+        let newEventVC = NewTrackerViewController(trackerType: "event", store: store)
         newEventVC.completionCancel = { [weak self] in
             self?.completionCancel?()
         }

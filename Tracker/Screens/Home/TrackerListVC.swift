@@ -1,7 +1,11 @@
 import UIKit
 
-final class TrackerListViewController: UIViewController {
-    private let data = DataManagement()
+final class TrackerListViewController: UIViewController, DataStoreDelegate {
+    private var store: DataStore
+    private var trackerData: TrackerStore?
+    private var categoryData: CategoryStore?
+    private var trackerRecordData: TrackerRecordStore?
+    private let dateFormatter = DateFormatter()
     private let searchController = UISearchController(searchResultsController: nil)
     private let collection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     private var categories: [TrackerCategory]?
@@ -17,7 +21,7 @@ final class TrackerListViewController: UIViewController {
         return searchController.isActive && !searchBarIsEmpty
     }
     private let datePicker = UIDatePicker()
-    private var currentDate: Date?
+    private var dateFromDatePicker: Date?
     
     private let noTrackersView: UIView = {
         let noTrackersIndicatorView = UIView()
@@ -85,13 +89,27 @@ final class TrackerListViewController: UIViewController {
         return noTrackersIndicatorView
     }()
     
+    init(store: DataStore) {
+        self.store = store
+        categoryData = CategoryStore(dataStore: store)
+        trackerData = TrackerStore(dataStore: store)
+        trackerRecordData = TrackerRecordStore(dataStore: store)
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         view.backgroundColor = UIColor(named: "YPWhite")
         configureNavigationBar()
-        currentDate = datePicker.date
-        guard let currentDate = currentDate else { return }
-        categories = prepareCategories(date: currentDate)
+        dateFromDatePicker = prepareDate(date: datePicker.date)
+        guard let date = dateFromDatePicker else { return }
+        
+        categories = prepareCategories(date: date)
         
         collection.register(TrackerListItem.self, forCellWithReuseIdentifier: TrackerListItem.reuseIdentifier)
         collection.register(SupplementaryView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
@@ -108,28 +126,47 @@ final class TrackerListViewController: UIViewController {
             collection.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
         
+        trackerData?.delegate = self
+        trackerRecordData?.delegate = self
+        
         updateTrackers()
         placeholderIfNeeded()
     }
     
     private func prepareCategories(date: Date, searchText: String? = nil) -> [TrackerCategory] {
-        let categories = data.categories
-        let weekDay = getWeekDay()
         var result: [TrackerCategory] = []
-        var searchQuery = ""
-        if let searchText = searchText { searchQuery = searchText }
-        for category in categories {
-            var filteredTrackers: [Tracker]
-            if searchQuery.count > 0 {
-                filteredTrackers = data.trackers.filter { ($0.categoryId == category.id && $0.schedule != nil && $0.schedule!.daysOfweek().contains(weekDay) && $0.title.lowercased().contains(searchQuery.lowercased())) || $0.categoryId == category.id && $0.schedule == nil && $0.title.lowercased().contains(searchQuery.lowercased()) }
-            } else {
-                filteredTrackers = data.trackers.filter { ($0.categoryId == category.id && $0.schedule != nil && $0.schedule!.daysOfweek().contains(weekDay)) || $0.categoryId == category.id && $0.schedule == nil }
+        if let categories = categoryData?.getCategories() {
+            //print(categories)
+            let weekDay = getWeekDay()
+            var searchQuery = ""
+            if let searchText = searchText { searchQuery = searchText }
+            for category in categories {
+                //print(category)
+                if let trackerData = trackerData {
+                    let filteredTrackers = trackerData.getTrackers()
+                    /*
+                    let filteredTrackers = trackerData.getTrackers().filter {
+                        var days = false
+                        if let schedule = $0.schedule {
+                            days = schedule.daysOfweek().contains(weekDay)
+                        }
+                        if searchQuery.count > 0 {
+                            return ($0.categoryId == category.id && days && $0.title.lowercased().contains(searchQuery.lowercased())) || ($0.categoryId == category.id && $0.schedule == nil && $0.title.lowercased().contains(searchQuery.lowercased()))
+                        } else {
+                            print($0)
+                            return $0.categoryId == category.id && days || ($0.categoryId == category.id && $0.schedule == nil)// || true
+                        }
+                    }
+                    */
+                    if filteredTrackers.count > 0 {
+                        result.append(TrackerCategory(categoryId: category.id, trackers: filteredTrackers))
+                    }
+                }
             }
-            if filteredTrackers.count > 0 {
-                result.append(TrackerCategory(categoryId: Int(category.id), trackers: filteredTrackers))
-            }
+            return result
+        } else {
+            return []
         }
-        return result
     }
     
     private func placeholderIfNeeded() {
@@ -204,14 +241,14 @@ final class TrackerListViewController: UIViewController {
     }
     
     private func getWeekDay() -> Int {
-        guard let currentDate = currentDate else { return 0 }
+        guard let currentDate = dateFromDatePicker else { return 0 }
         let calendar = Calendar(identifier: .gregorian)
         let weekDay = calendar.component(.weekday, from: currentDate)
         return weekDay
     }
     
     @objc private func addTracker() {
-        let createNewTrackerVC = CreateNewTrackerViewController()
+        let createNewTrackerVC = CreateNewTrackerViewController(store: store)
         createNewTrackerVC.completionCancel = { [weak self] in
             self?.dismiss(animated: true)
         }
@@ -222,69 +259,86 @@ final class TrackerListViewController: UIViewController {
         present(createNewTrackerVC, animated: true)
     }
     
-    private func dateForCompletedTrackers() -> Date? {
-        guard let date = currentDate else { return nil }
-        let dateFormatter = DateFormatter()
+    private func prepareDate(date: Date) -> Date? {
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let shortDate = dateFormatter.string(from: date)
         let longDate = "\(shortDate)T00:00:00+0000"
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-        return dateFormatter.date(from: longDate)
+        if let result = dateFormatter.date(from: longDate) {
+            return result
+        } else {
+            return nil
+        }
     }
     
     @objc private func checkDone(sender: DoneButton) {
-        if completedTrackers == nil { completedTrackers = [] }
-        if let trackerDate = dateForCompletedTrackers() {
-            if completedTrackers?.filter({ $0.trackerId == sender.tag && $0.doneAt == trackerDate }).count == 0 {
-                completedTrackers?.append(TrackerRecord(trackerId: sender.tag, doneAt: trackerDate))
-                collection.reloadData()
-            }
+        guard let dateFromDatePicker = dateFromDatePicker,
+              let date = prepareDate(date: dateFromDatePicker)
+        else { return }
+        do {
+            try trackerRecordData?.addTrackerRecord(doneAt: date, trackerId: sender.tag)
+        } catch let error {
+            print(error.localizedDescription)
         }
     }
     
     @objc private func updateTrackers() {
-        currentDate = datePicker.date
-        guard let currentDate = currentDate else { return }
+        dateFromDatePicker = prepareDate(date: datePicker.date)
+        trackerData?.dateFromDatePicker = dateFromDatePicker
+        guard let currentDate = dateFromDatePicker else { return }
         categories = prepareCategories(date: currentDate)
         collection.reloadData()
         placeholderIfNeeded()
+    }
+    
+    func didUpdate() {
+        updateTrackers()
     }
 }
 
 extension TrackerListViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
+        
+        trackerData?.numberOfSectionsForTrackers() ?? 0
+        /*
         if isFiltering {
             return visibleCategories?.count ?? 0
         }
         return categories?.count ?? 0
+         */
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        trackerData?.numberOfRowsInSectionForTrackers(section) ?? 0
+        /*
         if isFiltering {
             return visibleCategories?[section].trackers.count ?? 0
         }
         return categories?[section].trackers.count ?? 0
+         */
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerListItem.reuseIdentifier, for: indexPath) as? TrackerListItem,
-              let tracker = isFiltering ? visibleCategories?[indexPath.section].trackers[indexPath.row] : categories?[indexPath.section].trackers[indexPath.row]
+              let tracker = trackerData?.object(at: indexPath),
+              let dateFromDatePicker = dateFromDatePicker,
+              let date = prepareDate(date: dateFromDatePicker),
+              let done = trackerRecordData?.isTrackerDone(atDate: date, trackerId: tracker.id)
+              //let color = tracker.color
+              //let tracker = isFiltering ? visibleCategories?[indexPath.section].trackers[indexPath.row] : categories?[indexPath.section].trackers[indexPath.row]
         else {
             return UICollectionViewCell()
         }
         cell.prepareForReuse()
         
-        cell.itemBackground.backgroundColor = UIColor(named: tracker.color)
+        let color = tracker.color ?? const.defaultColor
+        
+        cell.itemBackground.backgroundColor = UIColor(named: color)
         cell.icon.text = tracker.emoji
         cell.title.text = tracker.title
-        cell.doneButton.isEnabled = true
-        
-        if completedTrackers?.firstIndex(where: { $0.trackerId == tracker.id && $0.doneAt == dateForCompletedTrackers() }) != nil {
-            cell.doneButton.isEnabled = false
-        }
-        
-        cell.doneButton.backgroundColor = UIColor(named: tracker.color)
+        cell.doneButton.isEnabled = !done
+        cell.doneButton.backgroundColor = UIColor(named: color)
         cell.doneButton.tag = Int(tracker.id)
         cell.doneButton.addTarget(self, action: #selector(checkDone), for: .touchUpInside)
         return cell
@@ -304,8 +358,10 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         guard let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as? SupplementaryView else { return UICollectionReusableView() }
-        
-        view.titleLabel.text = data.getCategoryNameById(id: categories?[indexPath.section].categoryId ?? 0)
+        //print("categories = \(categories)")
+        //print("viewForSupplementaryElementOfKind indexPath = \(indexPath.section)")
+        //print("categories[\(indexPath.section)] = \(categories?[indexPath.section])")
+        view.titleLabel.text = categoryData?.getCategoryNameById(id: categories?[indexPath.section].categoryId ?? 0)
         return view
     }
     
@@ -321,7 +377,7 @@ extension TrackerListViewController: UISearchResultsUpdating {
     }
     
     private func filterContentForSearchText(_ searchText: String) {
-        guard let currentDate = currentDate,
+        guard let currentDate = dateFromDatePicker,
               isFiltering,
               searchText.count > 0
         else {
@@ -342,7 +398,7 @@ final class StatisticsViewController: UIViewController {
 }
 
 final class TabBarViewController: UITabBarController {
-    private let trackerListVC = UINavigationController(rootViewController: TrackerListViewController())
+    private let trackerListVC = UINavigationController(rootViewController: TrackerListViewController(store: DataStore()))
     private let statisticsVC = UINavigationController(rootViewController: StatisticsViewController())
     
     override func viewDidLoad() {

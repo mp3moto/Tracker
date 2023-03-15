@@ -1,26 +1,6 @@
 import UIKit
 import CoreData
 
-struct TrackersStoreUpdate {
-    let insertedIndexes: IndexSet
-    let deletedIndexes: IndexSet
-}
-/*
-protocol CategoryRecordProtocol {
-    var id: Int32 { get }
-    var name: String { get }
-}
-
-@objc(CategoryRecord)
-class CategoryRecord: NSManagedObject, CategoryRecordProtocol {
-    @NSManaged var id: Int32
-    @NSManaged var name: String
-}
-*/
-protocol DataManagementDelegate: AnyObject {
-    func didUpdate(_ update: TrackersStoreUpdate)
-}
-
 final class DataManagement: NSObject, NSFetchedResultsControllerDelegate {
     private let context: NSManagedObjectContext
     private let userDefaults = UserDefaults.standard
@@ -35,15 +15,17 @@ final class DataManagement: NSObject, NSFetchedResultsControllerDelegate {
         let fetchResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
         fetchResultsController.delegate = self
         try? fetchResultsController.performFetch()
-        print(fetchResultsController.fetchedObjects?.count)
+        
         return fetchResultsController
     }()
     
+    
     private var insertedIndexes: IndexSet?
     private var deletedIndexes: IndexSet?
+    private var updatedIndexes: IndexSet?
     
-    weak var delegate: DataManagementDelegate?
-    
+    //weak var delegate: DataManagementDelegate?
+    /*
     var categories: [Category] {
         get {
             let request = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
@@ -51,23 +33,15 @@ final class DataManagement: NSObject, NSFetchedResultsControllerDelegate {
             do {
                 let fetchedData = try context.fetch(request)
                 fetchedData.forEach {
-                    categories.append(Category(id: $0.id, name: $0.name ?? "Без названия"))
+                    categories.append(Category(id: $0.id, name: $0.name ?? const.noName))
                 }
             } catch let error {
                 print(error.localizedDescription)
             }
             return categories
         }
-        /*
-        set {
-            
-            if let data = try? PropertyListEncoder().encode(newValue) {
-                userDefaults.set(data, forKey: Keys.categories.rawValue)
-            }
-        }
-         */
     }
-    
+    */
     var trackers: [Tracker] {
         get {
             if let data = userDefaults.data(forKey: Keys.trackers.rawValue) {
@@ -94,7 +68,7 @@ final class DataManagement: NSObject, NSFetchedResultsControllerDelegate {
     
     func count(for entity: String) -> Int {
         switch entity {
-        case "category": return categories.count
+        //case "category": return categories.count
         case "tracker": return trackers.count
         default: return 0
         }
@@ -106,15 +80,25 @@ final class DataManagement: NSObject, NSFetchedResultsControllerDelegate {
         let newCategory = TrackerCategoryCoreData(context: context)
         newCategory.id = id
         newCategory.name = name
-        
+
         try context.save()
-        //delegate?.
-        //categories.append(Category(id: Int32(id), name: name))
+
         return id
     }
     
-    func deleteCategory() {
-        
+    func deleteCategory(_ id: Int32) {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "TrackerCategoryCoreData")
+        fetchRequest.predicate = NSPredicate(format: "id = %@", "\(id)")
+        fetchRequest.returnsObjectsAsFaults = false
+        do {
+            guard let fetchedResults = try context.fetch(fetchRequest) as? [NSManagedObject] else { return }
+            for record in fetchedResults {
+                context.delete(record)
+            }
+            try context.save()
+        } catch {
+            print("An error occured while deleting category with id \(id)")
+        }
     }
     
     func addTracker(title: String, emoji: String, color: String, categoryId: Int, schedule: Schedule?) -> Int32 {
@@ -124,17 +108,24 @@ final class DataManagement: NSObject, NSFetchedResultsControllerDelegate {
     }
     
     func updateCategory(id: Int, name: String) {
-        /*
-        if let index = categories.firstIndex(where: { $0.id == id }) {
-            categories[index] = Category(id: Int32(id), name: name)
+        let fetchRequest = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
+        fetchRequest.predicate = NSPredicate(format: "id = %@", "\(id)")
+        fetchRequest.returnsObjectsAsFaults = false
+        do {
+            let fetchedResults = try? context.fetch(fetchRequest)
+            if let category = fetchedResults?.first {
+                category.name = name
+            }
+            try context.save()
+        } catch {
+            print("Error")
         }
-        */
     }
     
     private func getNextId(for entity: String) -> Int32 {
         var maxId: Int32?
         switch entity {
-        case "category": maxId = categories.max(by: { a, b in a.id < b.id })?.id
+        //case "category": maxId = categories.max(by: { a, b in a.id < b.id })?.id
         case "tracker": maxId = trackers.max(by: { a, b in a.id < b.id })?.id
         default: maxId = 0
         }
@@ -147,6 +138,19 @@ final class DataManagement: NSObject, NSFetchedResultsControllerDelegate {
         }
     }
     
+    func getCategory(_ id: Int32) -> Category? {
+        let fetchRequest = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
+        fetchRequest.predicate = NSPredicate(format: "id = %@", "\(id)")
+        fetchRequest.returnsObjectsAsFaults = false
+        
+        let fetchedResults = try? context.fetch(fetchRequest)
+        if let category = fetchedResults?.first {
+            return Category(id: category.id, name: category.name ?? const.noName)
+        } else {
+            return nil
+        }
+    }
+    /*
     func getCategoryNameById(id: Int) -> String? {
         if let index = categories.firstIndex(where: { $0.id == id }) {
             return categories[index].name
@@ -154,25 +158,24 @@ final class DataManagement: NSObject, NSFetchedResultsControllerDelegate {
             return nil
         }
     }
+    */
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        print("controllerWillChangeContent called")
         insertedIndexes = IndexSet()
         deletedIndexes = IndexSet()
-        print("insertedIndexes = \(insertedIndexes)")
-        print("deletedIndexes = \(deletedIndexes)")
+        updatedIndexes = IndexSet()
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        print("controllerDidChangeContent called")
         guard let inserted = insertedIndexes,
-              let deleted = deletedIndexes
+              let deleted = deletedIndexes,
+              let updated = updatedIndexes
         else { return }
-        print("inserted = \(inserted)")
-        print("deleted = \(deleted)")
-        delegate?.didUpdate(TrackersStoreUpdate(insertedIndexes: inserted, deletedIndexes: deleted))
+
+        //delegate?.didUpdate(TrackersStoreUpdate(insertedIndexes: inserted, deletedIndexes: deleted, updatedIndexes: updated))
         
-        self.insertedIndexes = nil
-        self.deletedIndexes = nil
+        insertedIndexes = nil
+        deletedIndexes = nil
+        updatedIndexes = nil
     }
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
@@ -182,16 +185,19 @@ final class DataManagement: NSObject, NSFetchedResultsControllerDelegate {
                 deletedIndexes?.insert(indexPath.item)
             }
         case .insert:
-            print(".insert, controller didChange called with indexPath = \(indexPath)")
-            if let indexPath = indexPath {
+            if let indexPath = newIndexPath {
                 insertedIndexes?.insert(indexPath.item)
+            }
+        case .update:
+            if let indexPath = indexPath {
+                updatedIndexes?.insert(indexPath.item)
             }
         default:
             break
         }
     }
 }
-
+/*
 extension DataManagement {
     var numberOfSections: Int{
         fetchResultsController.sections?.count ?? 0
@@ -205,3 +211,4 @@ extension DataManagement {
         fetchResultsController.object(at: indexPath)
     }
 }
+*/

@@ -1,9 +1,11 @@
 import UIKit
 
 final class CategoriesViewCotroller: UIViewController {
-    private let data = DataManagement()
+    private let store: DataStore
+    private let data: CategoryStore?
     private let categoriesTableView = UITableView()
     private var lastCategoriesCount: Int = 0
+    private var categoriesTableViewIds: [Int32] = []
     weak var parentVC: NewTrackerViewController?
     var categoryCompletion: (() -> Void)?
     
@@ -43,7 +45,18 @@ final class CategoriesViewCotroller: UIViewController {
         return noTrackersIndicatorView
     }()
     
+    init(store: DataStore) {
+        self.store = store
+        data = CategoryStore(dataStore: store)
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
+        
         super.viewDidLoad()
         view.backgroundColor = UIColor(named: "YPWhite")
         
@@ -106,11 +119,13 @@ final class CategoriesViewCotroller: UIViewController {
         placeholderIfNeeded()
         
         /* --------------------------------------------------------------- */
-        
-        data.delegate = self
+        data?.delegate = self
     }
 
     private func updateCategories() {
+        //print("updateCategories called")
+        categoriesTableViewIds = []
+        categoriesTableView.reloadData()
         placeholderIfNeeded()
         
         /*
@@ -132,7 +147,7 @@ final class CategoriesViewCotroller: UIViewController {
     }
     
     private func placeholderIfNeeded() {
-        if data.categories.count == 0 {
+        if data?.getCategories().count == 0 {
             categoriesTableView.addSubview(noCategoriesView)
             NSLayoutConstraint.activate([
                 noCategoriesView.centerXAnchor.constraint(equalTo: categoriesTableView.centerXAnchor),
@@ -146,54 +161,54 @@ final class CategoriesViewCotroller: UIViewController {
     }
     
     @objc private func addCategory() {
-        let addCategoryVC = AddCategoryViewController()
+        let addCategoryVC = AddCategoryViewController(store: store)
         addCategoryVC.completion = { [weak self] in
             self?.updateCategories()
             self?.dismiss(animated: true)
         }
-        lastCategoriesCount = data.count(for: "category")
-        present(addCategoryVC, animated: true)
+        if let _ = data?.getCategories().count {
+            present(addCategoryVC, animated: true)
+        }
     }
 }
 
-extension CategoriesViewCotroller: DataManagementDelegate {
-    func didUpdate(_ update: TrackersStoreUpdate) {
-        categoriesTableView.performBatchUpdates {
-            let insertedIndexPath = update.insertedIndexes.map { IndexPath(item: $0, section: 0) }
-            let deletedIndexPath = update.deletedIndexes.map { IndexPath(item: $0, section: 0) }
-            print("insertedIndexPath = \(insertedIndexPath)")
-            print("deletedIndexPath = \(deletedIndexPath)")
-            
-            categoriesTableView.insertRows(at: insertedIndexPath, with: .automatic)
-            categoriesTableView.deleteRows(at: deletedIndexPath, with: .fade)
-        }
+extension CategoriesViewCotroller: DataStoreDelegate {
+    func didUpdate() {
+        categoriesTableViewIds = []
+        categoriesTableView.reloadData()
+        placeholderIfNeeded()
     }
-    
-    
 }
 
 extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        //return data.categories.count
-        data.numberOfRowsInSection(section)
+        guard let data = data else { return 0 }
+        return data.numberOfRowsInSectionForCategories(section)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let record = data.object(at: indexPath),
-              let cell = tableView.dequeueReusableCell(withIdentifier: CategoryListCell.reuseIdentifier, for: indexPath) as? CategoryListCell
+        guard let record = data?.object(at: indexPath),
+              let cell = tableView.dequeueReusableCell(withIdentifier: CategoryListCell.reuseIdentifier, for: indexPath) as? CategoryListCell,
+              let data = data
         else { return CategoryListCell() }
-        //let // else { return CategoryListCell() }
-        cell.cellText = record.name//data.categories[indexPath.row].name
-        cell.layer.maskedCorners = []
-        if parentVC?.selectedCategory ?? 0 == data.categories[indexPath.row].id {
+
+        categoriesTableViewIds.append(record.id)
+        //print(categoriesTableViewIds)
+        
+        cell.cellText = record.name
+        if parentVC?.selectedCategory ?? 0 == record.id {
             cell.checkmarkImage.isHidden = false
+        } else {
+            cell.checkmarkImage.isHidden = true
         }
+        
+        cell.layer.maskedCorners = []
         if indexPath.row == 0 {
             cell.layer.cornerRadius = 16
             cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         }
         
-        if indexPath.row == data.count(for: "category") - 1 {
+        if indexPath.row == data.count - 1 {
             cell.layer.cornerRadius = 16
             cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
             if indexPath.row == 0 {
@@ -210,18 +225,20 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
         return UIContextMenuConfiguration(actionProvider: { actions in
             return UIMenu(children: [
                 UIAction(title: "Редактировать") { [weak self] _ in
-                    let addCategoryVC = AddCategoryViewController()
-                    addCategoryVC.completion = { [weak self] in
-                        self?.updateCategories()
+                    guard let self = self else { return }
+                    let addCategoryVC = AddCategoryViewController(store: self.store)
+                    addCategoryVC.renameCompletion = { [weak self] in
+                        self?.didUpdate()
+                        self?.categoryCompletion?()
                     }
-                    addCategoryVC.category = self?.data.categories[indexPath.row]
-                    self?.lastCategoriesCount = self?.data.count(for: "category") ?? 0
-                    self?.present(addCategoryVC, animated: true)
+                    addCategoryVC.categoryId = self.categoriesTableViewIds[indexPath.row]
+                    self.lastCategoriesCount = self.data?.count ?? 0
+                    self.present(addCategoryVC, animated: true)
                 },
                 UIAction(title: "Удалить", attributes: .destructive) { [weak self] _ in
-                    //self?.data.categories.remove(at: indexPath.row)
-                    self?.categoriesTableView.deleteRows(at: [indexPath], with: .automatic)
-                    self?.placeholderIfNeeded()
+                    //guard let row = indexPath.row else { self?.dismiss(animated: true) }
+                    self?.data?.deleteCategory(self?.categoriesTableViewIds[indexPath.row] ?? 0)
+                    self?.didUpdate()
                 }
             ])
         })
@@ -232,7 +249,9 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        parentVC?.setCategory(id: Int32(indexPath.row))
+        parentVC?.setCategory(id: categoriesTableViewIds[indexPath.row])
+        //print(categoriesTableViewIds[indexPath.row])
+        //categoryCompletion?()
         dismiss(animated: true)
     }
     

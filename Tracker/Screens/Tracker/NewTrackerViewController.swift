@@ -2,6 +2,7 @@ import UIKit
 
 class NewTrackerViewController: UIViewController {
     private let trackerType: String
+    private let store: DataStore
     var completionCancel: (() -> Void)?
     var completionCreate: (() -> Void)?
     var selectedCategory: Int32?
@@ -14,7 +15,8 @@ class NewTrackerViewController: UIViewController {
     private var selectedEmoji: String?
     private var selectedColor: String?
     
-    private let data = DataManagement()
+    private let trackerData: TrackerStore?
+    private let categoryData: CategoryStore?
     private let trackerParamsTableView = UITableView()
     private var trackerParamsTableViewValues: [String]?
     
@@ -33,6 +35,20 @@ class NewTrackerViewController: UIViewController {
         return field
     }()
     
+    private let trackerNameHint: UILabel = {
+        let label = UILabel()
+        label.text = "Ограничение \(const.trackerNameLengthLimit) символов"
+        label.textColor = UIColor(named: "YPRed")
+        label.font = UIFont(name: "YSDisplay-Medium", size: 17)
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        
+        return label
+    }()
+    
+    var constraint1 = NSLayoutConstraint()
+    var constraint2 = NSLayoutConstraint()
+    
     private let emojiCollection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     private let colorCollection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     
@@ -42,13 +58,16 @@ class NewTrackerViewController: UIViewController {
     private let emoji: [String] = ["🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"]
     private let colors: [String] = ["Sunset Orange", "West Side", "Azure Radiance", "Electric Violet", "Emerald", "Orchid", "Azalea", "Dodger Blue", "Turquoise", "Minsk", "Persimmon", "Carnation Pink", "Manhattan", "Cornflower Blue", "Violet", "Medium Purple", "Purple", "Soft Emerald"]
     
-    init(trackerType: String) {
+    init(trackerType: String, store: DataStore) {
         self.trackerType = trackerType
-        if trackerType == "habit" {
+        self.store = store
+        if trackerType == const.habit {
             trackerParamsTableViewValues = ["Категория", "Расписание"]
         } else {
             trackerParamsTableViewValues = ["Категория"]
         }
+        trackerData = TrackerStore(dataStore: store)
+        categoryData = CategoryStore(dataStore: store)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -124,6 +143,17 @@ class NewTrackerViewController: UIViewController {
         ])
         /*----------------------------------------------------------------*/
         
+        /*-------------------------TrackerNameHint------------------------*/
+        pageContentView.addSubview(trackerNameHint)
+        NSLayoutConstraint.activate([
+            trackerNameHint.leadingAnchor.constraint(equalTo: trackerName.leadingAnchor),
+            trackerNameHint.trailingAnchor.constraint(equalTo: trackerName.trailingAnchor),
+            trackerNameHint.heightAnchor.constraint(equalToConstant: 22),
+            trackerNameHint.topAnchor.constraint(equalTo: trackerName.bottomAnchor, constant: 8)
+        ])
+        trackerNameHint.layer.opacity = 0
+        /*----------------------------------------------------------------*/
+        
         /*--------------------------TrackerParams-------------------------*/
         trackerParamsTableView.layer.cornerRadius = 16
         trackerParamsTableView.translatesAutoresizingMaskIntoConstraints = false
@@ -134,9 +164,14 @@ class NewTrackerViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             trackerParamsTableView.widthAnchor.constraint(equalTo: pageContentView.widthAnchor),
-            trackerParamsTableView.topAnchor.constraint(equalTo: trackerName.bottomAnchor, constant: 24),
+            //trackerParamsTableView.topAnchor.constraint(equalTo: trackerName.bottomAnchor, constant: 24),
             trackerParamsTableView.heightAnchor.constraint(equalToConstant: CGFloat(trackerParamsTableViewRowsCount * 75))
         ])
+        
+        constraint1 = trackerParamsTableView.topAnchor.constraint(equalTo: trackerName.bottomAnchor, constant: 24)
+        constraint2 = trackerParamsTableView.topAnchor.constraint(equalTo: trackerNameHint.bottomAnchor, constant: 32)
+        
+        constraint1.isActive = true
         
         trackerParamsTableView.register(TrackerListCell.self, forCellReuseIdentifier: TrackerListCell.reuseIdentifier)
         
@@ -197,28 +232,45 @@ class NewTrackerViewController: UIViewController {
         /*----------------------------------------------------------------*/
         
     }
-    
+        
     @objc private func cancelCreation() {
         completionCancel?()
     }
     
-    @objc private func createTracker() {
+    @objc private func createTracker() throws {
         guard let title = trackerName.text,
               let emoji = selectedEmoji,
               let color = selectedColor,
               let categoryId = selectedCategory
-        else { return }
-        _ = data.addTracker(title: title, emoji: emoji, color: color, categoryId: Int(categoryId), schedule: selectedSchedule)
-        completionCreate?()
+        else {
+            return
+        }
+        do {
+            _ = try trackerData?.addTracker(title: title, emoji: emoji, color: color, categoryId: categoryId, schedule: selectedSchedule)
+            completionCreate?()
+        } catch {
+            print("error ocured while tracker created")
+        }
     }
     
     @objc func setCategory(id: Int32) {
-        selectedCategory = data.categories[Int(id)].id
+        selectedCategory = id
         checkState()
         trackerParamsTableView.reloadData()
     }
     
     @objc private func checkState() {
+        let trackerNameLength = trackerName.text?.count ?? 0
+        if trackerNameLength > const.trackerNameLengthLimit {
+            constraint1.isActive = false
+            constraint2.isActive = true
+            trackerNameHint.layer.opacity = 1
+        } else {
+            constraint2.isActive = false
+            constraint1.isActive = true
+            trackerNameHint.layer.opacity = 0
+        }
+        
         createButton.isEnabled = trackerIsReadyToBeCreated()
     }
     
@@ -234,8 +286,15 @@ class NewTrackerViewController: UIViewController {
         let trackerNameLength = trackerName.text?.count ?? 0
         let trackerNameIsOK = trackerNameLength > 0 && trackerNameLength <= 38
         let categoryIsOK = category > 0
-        
-        return trackerNameIsOK && categoryIsOK
+        if trackerType == const.habit {
+            return selectedSchedule != nil && trackerNameIsOK && categoryIsOK
+        } else {
+            return trackerNameIsOK && categoryIsOK
+        }
+    }
+    
+    private func updateSelectedCategoryName() {
+        trackerParamsTableView.reloadData()
     }
 }
 
@@ -247,7 +306,7 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: TrackerListCell.reuseIdentifier, for: indexPath) as? TrackerListCell else { return TrackerListCell() }
         if indexPath.row == 0 {
-            cell.cellValueText = data.categories.first(where: { $0.id == selectedCategory })?.name
+            cell.cellValueText = categoryData?.getCategories().first(where: { $0.id == selectedCategory })?.name
         } else {
             cell.cellValueText = selectedSchedule?.text()
         }
@@ -273,7 +332,10 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch indexPath.row {
         case 0:
-            let categoriesVC = CategoriesViewCotroller()
+            let categoriesVC = CategoriesViewCotroller(store: store)
+            categoriesVC.categoryCompletion = { [weak self] in
+                self?.updateSelectedCategoryName()
+            }
             categoriesVC.parentVC = self
             present(categoriesVC, animated: true)
         default:

@@ -1,9 +1,12 @@
 import UIKit
 
 final class AddCategoryViewController: UIViewController {
-    
+    private let store: DataStore
     var completion: (() -> Void)?
-    var category: Category?
+    var renameCompletion: (() -> Void)?
+    var categoryId: Int32?
+    
+    private let data: CategoryStore?
     
     private let categoryName: UITextField = {
         let field = UITextField()
@@ -22,6 +25,16 @@ final class AddCategoryViewController: UIViewController {
     }()
     
     private let addCategoryButton = YPButton(text: "Добавить категорию", destructive: false)
+    
+    init(store: DataStore) {
+        self.store = store
+        data = CategoryStore(dataStore: store)
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         view.backgroundColor = UIColor(named: "YPWhite")
@@ -77,13 +90,17 @@ final class AddCategoryViewController: UIViewController {
         ])
         /*--------------------------------------------------------------- */
         
-        if let category = category {
-            titleLabel.text = "Редактирование категории"
-            addCategoryButton.setTitle("Готово", for: .normal)
-            categoryName.text = category.name
-            addCategoryButton.removeTarget(self, action: #selector(addCategory), for: .touchUpInside)
-            addCategoryButton.tag = Int(category.id)
-            addCategoryButton.addTarget(self, action: #selector(updateCategory), for: .touchUpInside)
+        if let categoryId = categoryId {
+            if let category = data?.getCategory(categoryId) {
+                titleLabel.text = "Редактирование категории"
+                addCategoryButton.setTitle("Готово", for: .normal)
+                categoryName.text = category.name
+                addCategoryButton.removeTarget(self, action: #selector(addCategory), for: .touchUpInside)
+                addCategoryButton.tag = Int(category.id)
+                addCategoryButton.addTarget(self, action: #selector(updateCategory), for: .touchUpInside)
+            } else {
+                dismiss(animated: true)
+            }
         }
     }
     
@@ -98,20 +115,20 @@ final class AddCategoryViewController: UIViewController {
     }
     
     @objc private func addCategory() {
-        let data = DataManagement()
         do {
-            try _ = data.addCategory(name: categoryName.text ?? "Без названия")
+            try _ = data?.addCategory(name: categoryName.text ?? const.noName)
             completion?()
             //dismiss(animated: true)
         } catch let error {
+            //print("catch in action in AddCategoryViewController")
             print(error.localizedDescription)
         }
     }
     
     @objc private func updateCategory(sender: YPButton) {
-        let data = DataManagement()
-        data.updateCategory(id: sender.tag, name: self.categoryName.text ?? "Без названия")
-        completion?()
+        let data = CategoryStore(dataStore: store)
+        data.updateCategory(id: sender.tag, name: self.categoryName.text ?? const.noName)
+        renameCompletion?()
         dismiss(animated: true)
     }
 }

@@ -1,20 +1,27 @@
 import Foundation
 
+struct TrackersStoreUpdate {
+    let insertedIndexes: IndexSet
+    let deletedIndexes: IndexSet
+    let updatedIndexes: IndexSet
+}
+
 struct Tracker: Codable {
     let id: Int32
     let title: String
     let emoji: String
     let color: String
-    let categoryId: Int
+    let categoryId: Int32
     let schedule: Schedule?
+    let done: Bool
 }
 
 struct TrackerCategory {
-    let categoryId: Int
+    let categoryId: Int32
     let trackers: [Tracker]
 }
 
 struct TrackerRecord {
-    let trackerId: Int
+    let trackerId: Int32
     let doneAt: Date
 }

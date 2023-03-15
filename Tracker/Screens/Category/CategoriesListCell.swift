@@ -31,6 +31,7 @@ final class CategoryListCell: UITableViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
+        separatorInset = .init(top: 0, left: 16, bottom: 0, right: 16)
     }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -43,6 +44,7 @@ final class CategoryListCell: UITableViewCell {
         
         checkmarkImage.isHidden = true
         containerView.addSubview(checkmarkImage)
+        
         
         NSLayoutConstraint.activate([
             containerView.topAnchor.constraint(equalTo: contentView.topAnchor),

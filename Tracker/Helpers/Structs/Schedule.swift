@@ -48,4 +48,21 @@ struct Schedule: Codable {
             return tempArray.map{$0}.joined(separator: ", ")
         }
     }
+    
+    func binary() -> String {
+        var binary: String = ""
+        if sat { binary += "1" } else { binary += "0" }
+        if fri { binary += "1" } else { binary += "0" }
+        if thu { binary += "1" } else { binary += "0" }
+        if wed { binary += "1" } else { binary += "0" }
+        if tue { binary += "1" } else { binary += "0" }
+        if mon { binary += "1" } else { binary += "0" }
+        if sun { binary += "1" } else { binary += "0" }
+        print(binary)
+        return binary
+    }
+    
+    func packed() -> Int32 {
+        Int32(binary(), radix: 2) ?? 0
+    }
 }
