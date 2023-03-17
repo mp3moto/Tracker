@@ -5,22 +5,37 @@ protocol DataStoreDelegate: AnyObject {
     func didUpdate()
 }
 
+final class DataStoreHelper {
+    var persistentContainer: NSPersistentContainer = {
+        let container = NSPersistentContainer(name: "DataModel")
+        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+            if let error = error as NSError? {
+                fatalError(error.localizedDescription)
+            }
+        })
+        return container
+    }()
+}
+
 final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
     private let context: NSManagedObjectContext
     var dateFromDatePicker: Date?
     weak var categoriesDelegate: DataStoreDelegate?
     weak var trackersDelegate: DataStoreDelegate?
     weak var trackerRecordDelegate: DataStoreDelegate?
+    private var sqlQuery: String?
     
-    lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "DataModel")
-        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
-            if let error = error as NSError? {
-                
-            }
-        })
-        return container
-    }()
+    var searchQuery: String = ""
+    
+    func prepareSQLQueryString() -> String {
+        let defaultResult = "(schedule & \(getWeekDay()) != 0) OR (schedule = NULL)"
+        if searchQuery.count > 0 {
+            return "(\(defaultResult)) AND title CONTAINS[c] '\(searchQuery)'"
+        } else {
+            searchQuery = ""
+            return defaultResult
+        }
+    }
     
     private lazy var categoriesFRC: NSFetchedResultsController<TrackerCategoryCoreData> = {
         let fetchRequest = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
@@ -47,29 +62,22 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         return fetchResultsController
     }()
     
-    override init() {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        context = appDelegate.persistentContainer.viewContext
+    init(context: NSManagedObjectContext) {
+        self.context = context
+    }
+    
+    override convenience init() {
+        let helper = DataStoreHelper()
+        self.init(context: helper.persistentContainer.viewContext)
     }
     
     var categories: [Category] {
         get {
-            /*do {
-                try categoriesFRC.performFetch()
-            } catch let error {
-                print(error.localizedDescription)
-            }*/
-            //let request = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
             var categories: [Category] = []
-            //do {
                 let fetchedData = categoriesFRC.fetchedObjects
-                //let fetchedData = try context.fetch(request)
                 fetchedData?.forEach {
                     categories.append(Category(id: $0.id, name: $0.name ?? const.noName))
                 }
-            //} catch let error {
-            //    print(error.localizedDescription)
-            //}
             return categories
         }
     }
@@ -104,22 +112,18 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
     
     var trackers: [Tracker] {
         get {
-            do {
-                let weekday = getWeekDay()
-                trackersFRC.fetchRequest.predicate = NSPredicate(format: "(schedule & \(weekday) != 0) OR (schedule = NULL)")
-                //trackersFRC.fetchRequest.predicate = NSPredicate(format: "(schedule = NULL)")
+             do {
+                trackersFRC.fetchRequest.predicate = NSPredicate(format: prepareSQLQueryString())
                 try trackersFRC.performFetch()
-            } catch {
-                
+            } catch let error {
+                print(error.localizedDescription)
             }
             
             let doneRequest = NSFetchRequest<TrackerRecordCoreData>(entityName: "TrackerRecordCoreData")
             var trackers: [Tracker] = []
             do {
-                //let fetchedData = try context.fetch(request)
                 let fetchedDoneData = try context.fetch(doneRequest)
                 trackersFRC.fetchedObjects?.forEach {
-                //fetchedData.forEach {
                     let categoryId = $0.category?.id
                     let trackerId = $0.id
                     var schedule: Schedule?
@@ -192,7 +196,6 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
     }
     
     func addTracker(title: String, emoji: String, color: String, categoryId: Int32, schedule: Schedule?) throws -> Int32 {
-        trackersFRC.fetchRequest.predicate = NSPredicate()
         let id = getNextId(for: "tracker")
         
         let newTracker = TrackerCoreData(context: context)
@@ -202,11 +205,17 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         newTracker.color = color
         if let schedule = schedule {
             newTracker.schedule = (schedule.packed()) as NSNumber
+        } else {
+            newTracker.schedule = nil
         }
         newTracker.category = try getCategoryEntity(categoryId)
         
+        trackersFRC.fetchRequest.predicate = NSPredicate(format: "(schedule = NULL)")
         try context.save()
+        trackersFRC.fetchRequest.predicate = NSPredicate(format: "(schedule & \(getWeekDay()) != 0) OR (schedule = NULL)")
         
+        try trackersFRC.performFetch()
+
         return id
     }
     

@@ -118,9 +118,7 @@ final class AddCategoryViewController: UIViewController {
         do {
             try _ = data?.addCategory(name: categoryName.text ?? const.noName)
             completion?()
-            //dismiss(animated: true)
         } catch let error {
-            //print("catch in action in AddCategoryViewController")
             print(error.localizedDescription)
         }
     }

@@ -136,28 +136,15 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     private func prepareCategories(date: Date, searchText: String? = nil) -> [TrackerCategory] {
         var result: [TrackerCategory] = []
         if let categories = categoryData?.getCategories() {
-            //print(categories)
-            let weekDay = getWeekDay()
-            var searchQuery = ""
+            var searchQuery: String = "" {
+                didSet {
+                    trackerData?.searchQuery = searchQuery
+                }
+            }
             if let searchText = searchText { searchQuery = searchText }
             for category in categories {
-                //print(category)
                 if let trackerData = trackerData {
                     let filteredTrackers = trackerData.getTrackers()
-                    /*
-                    let filteredTrackers = trackerData.getTrackers().filter {
-                        var days = false
-                        if let schedule = $0.schedule {
-                            days = schedule.daysOfweek().contains(weekDay)
-                        }
-                        if searchQuery.count > 0 {
-                            return ($0.categoryId == category.id && days && $0.title.lowercased().contains(searchQuery.lowercased())) || ($0.categoryId == category.id && $0.schedule == nil && $0.title.lowercased().contains(searchQuery.lowercased()))
-                        } else {
-                            print($0)
-                            return $0.categoryId == category.id && days || ($0.categoryId == category.id && $0.schedule == nil)// || true
-                        }
-                    }
-                    */
                     if filteredTrackers.count > 0 {
                         result.append(TrackerCategory(categoryId: category.id, trackers: filteredTrackers))
                     }
@@ -189,7 +176,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
                 }
             }
         } else {
-            if visibleCategories?.count == 0 {
+            if categories?.count == 0 {
                 collection.addSubview(noTrackersFoundView)
                 NSLayoutConstraint.activate([
                     noTrackersFoundView.centerXAnchor.constraint(equalTo: collection.centerXAnchor),
@@ -287,7 +274,16 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         dateFromDatePicker = prepareDate(date: datePicker.date)
         trackerData?.dateFromDatePicker = dateFromDatePicker
         guard let currentDate = dateFromDatePicker else { return }
-        categories = prepareCategories(date: currentDate)
+        if let searchText = trackerData?.searchQuery {
+            print(searchController.isActive)
+            if searchController.isActive == false {
+                categories = prepareCategories(date: currentDate)
+            } else {
+                categories = prepareCategories(date: currentDate, searchText: searchText)
+            }
+        } else {
+            categories = prepareCategories(date: currentDate)
+        }
         collection.reloadData()
         placeholderIfNeeded()
     }
@@ -299,24 +295,11 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
 
 extension TrackerListViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        
         trackerData?.numberOfSectionsForTrackers() ?? 0
-        /*
-        if isFiltering {
-            return visibleCategories?.count ?? 0
-        }
-        return categories?.count ?? 0
-         */
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         trackerData?.numberOfRowsInSectionForTrackers(section) ?? 0
-        /*
-        if isFiltering {
-            return visibleCategories?[section].trackers.count ?? 0
-        }
-        return categories?[section].trackers.count ?? 0
-         */
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -325,8 +308,6 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
               let dateFromDatePicker = dateFromDatePicker,
               let date = prepareDate(date: dateFromDatePicker),
               let done = trackerRecordData?.isTrackerDone(atDate: date, trackerId: tracker.id)
-              //let color = tracker.color
-              //let tracker = isFiltering ? visibleCategories?[indexPath.section].trackers[indexPath.row] : categories?[indexPath.section].trackers[indexPath.row]
         else {
             return UICollectionViewCell()
         }
@@ -358,9 +339,6 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         guard let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as? SupplementaryView else { return UICollectionReusableView() }
-        //print("categories = \(categories)")
-        //print("viewForSupplementaryElementOfKind indexPath = \(indexPath.section)")
-        //print("categories[\(indexPath.section)] = \(categories?[indexPath.section])")
         view.titleLabel.text = categoryData?.getCategoryNameById(id: categories?[indexPath.section].categoryId ?? 0)
         return view
     }
@@ -372,21 +350,16 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
 
 extension TrackerListViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-        guard let searchText = searchController.searchBar.text else { return }
-        filterContentForSearchText(searchText)
-    }
-    
-    private func filterContentForSearchText(_ searchText: String) {
-        guard let currentDate = dateFromDatePicker,
-              isFiltering,
-              searchText.count > 0
+        guard let searchText = searchController.searchBar.text,
+              searchText.count > 0,
+              searchController.isActive
         else {
+            trackerData?.searchQuery = ""
             updateTrackers()
             return
         }
-        visibleCategories = prepareCategories(date: currentDate, searchText: searchText)
-        collection.reloadData()
-        placeholderIfNeeded()
+        trackerData?.searchQuery = searchText
+        updateTrackers()
     }
 }
 

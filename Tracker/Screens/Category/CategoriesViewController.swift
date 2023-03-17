@@ -123,27 +123,9 @@ final class CategoriesViewCotroller: UIViewController {
     }
 
     private func updateCategories() {
-        //print("updateCategories called")
         categoriesTableViewIds = []
         categoriesTableView.reloadData()
         placeholderIfNeeded()
-        
-        /*
-        categoriesTableView.performBatchUpdates {
-            var indexPathArray: [IndexPath] = []
-            if data.count(for: "category") > lastCategoriesCount {
-                for index in lastCategoriesCount..<data.count(for: "category") {
-                    indexPathArray.append(IndexPath(row: index, section: 0))
-                }
-                categoriesTableView.insertRows(at: indexPathArray, with: .automatic)
-                lastCategoriesCount = data.count(for: "category")
-            } else if data.count(for: "category") < lastCategoriesCount {
-                
-            } else {
-                categoriesTableView.reloadData()
-            }
-        }
-         */
     }
     
     private func placeholderIfNeeded() {
@@ -193,7 +175,6 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
         else { return CategoryListCell() }
 
         categoriesTableViewIds.append(record.id)
-        //print(categoriesTableViewIds)
         
         cell.cellText = record.name
         if parentVC?.selectedCategory ?? 0 == record.id {
@@ -250,8 +231,7 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         parentVC?.setCategory(id: categoriesTableViewIds[indexPath.row])
-        //print(categoriesTableViewIds[indexPath.row])
-        //categoryCompletion?()
+        //data.get
         dismiss(animated: true)
     }
     

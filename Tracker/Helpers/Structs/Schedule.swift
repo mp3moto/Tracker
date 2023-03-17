@@ -58,7 +58,6 @@ struct Schedule: Codable {
         if tue { binary += "1" } else { binary += "0" }
         if mon { binary += "1" } else { binary += "0" }
         if sun { binary += "1" } else { binary += "0" }
-        print(binary)
         return binary
     }
     

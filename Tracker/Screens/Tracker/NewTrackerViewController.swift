@@ -5,7 +5,7 @@ class NewTrackerViewController: UIViewController {
     private let store: DataStore
     var completionCancel: (() -> Void)?
     var completionCreate: (() -> Void)?
-    var selectedCategory: Int32?
+    var selectedCategory: Int32?//TrackerCategoryCoreData?
     var selectedSchedule: Schedule? {
         didSet {
             checkState()

@@ -9,6 +9,11 @@ final class TrackerStore: DataStoreDelegate {
             dataStore.dateFromDatePicker = dateFromDatePicker
         }
     }
+    var searchQuery: String = "" {
+        didSet {
+            dataStore.searchQuery = searchQuery
+        }
+    }
     
     
     func getTrackers() -> [Tracker] {
@@ -33,7 +38,6 @@ final class TrackerStore: DataStoreDelegate {
     
     func numberOfSectionsForTrackers() -> Int {
         dataStore.numberOfSectionsForTrackers()
-        //trackersFRC.sections?.count ?? 0
     }
     
     func object(at indexPath: IndexPath) -> TrackerCoreData? {
