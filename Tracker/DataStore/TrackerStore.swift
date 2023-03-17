@@ -21,9 +21,9 @@ final class TrackerStore: DataStoreDelegate {
         return trackers
     }
     
-    func addTracker(title: String, emoji: String, color: String, categoryId: Int32, schedule: Schedule?) throws -> Int32 {
+    func addTracker(title: String, emoji: String, color: String, category: TrackerCategoryCoreData, schedule: Schedule?) throws -> Int32 {
         do {
-            let trackerId = try dataStore.addTracker(title: title, emoji: emoji, color: color, categoryId: categoryId, schedule: schedule)
+            let trackerId = try dataStore.addTracker(title: title, emoji: emoji, color: color, category: category, schedule: schedule)
             return trackerId
         } catch let error {
             print(error.localizedDescription)

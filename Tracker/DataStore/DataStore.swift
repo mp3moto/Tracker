@@ -53,7 +53,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         let fetchResultsController = NSFetchedResultsController(
             fetchRequest: fetchRequest,
             managedObjectContext: context,
-            sectionNameKeyPath: #keyPath(TrackerCoreData.category),
+            sectionNameKeyPath: #keyPath(TrackerCoreData.category.name),
             cacheName: nil
         )
         fetchResultsController.delegate = self
@@ -195,7 +195,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         }
     }
     
-    func addTracker(title: String, emoji: String, color: String, categoryId: Int32, schedule: Schedule?) throws -> Int32 {
+    func addTracker(title: String, emoji: String, color: String, category: TrackerCategoryCoreData, schedule: Schedule?) throws -> Int32 {
         let id = getNextId(for: "tracker")
         
         let newTracker = TrackerCoreData(context: context)
@@ -208,7 +208,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         } else {
             newTracker.schedule = nil
         }
-        newTracker.category = try getCategoryEntity(categoryId)
+        newTracker.category = category
         
         trackersFRC.fetchRequest.predicate = NSPredicate(format: "(schedule = NULL)")
         try context.save()
@@ -302,6 +302,16 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         } catch let error {
             print(error.localizedDescription)
         }
+    }
+    
+    func getFRCSections() -> [String] {
+        let sections = trackersFRC.sections ?? []
+        var result: [String] = []
+        sections.forEach {
+            result.append($0.name)
+        }
+        
+        return result
     }
     
     func numberOfRowsInSectionForCategories(_ section: Int) -> Int {

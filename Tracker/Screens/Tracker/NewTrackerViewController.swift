@@ -5,7 +5,7 @@ class NewTrackerViewController: UIViewController {
     private let store: DataStore
     var completionCancel: (() -> Void)?
     var completionCreate: (() -> Void)?
-    var selectedCategory: Int32?//TrackerCategoryCoreData?
+    var selectedCategory: TrackerCategoryCoreData?
     var selectedSchedule: Schedule? {
         didSet {
             checkState()
@@ -241,20 +241,20 @@ class NewTrackerViewController: UIViewController {
         guard let title = trackerName.text,
               let emoji = selectedEmoji,
               let color = selectedColor,
-              let categoryId = selectedCategory
+              let category = selectedCategory
         else {
             return
         }
         do {
-            _ = try trackerData?.addTracker(title: title, emoji: emoji, color: color, categoryId: categoryId, schedule: selectedSchedule)
+            _ = try trackerData?.addTracker(title: title, emoji: emoji, color: color, category: category, schedule: selectedSchedule)
             completionCreate?()
         } catch {
             print("error ocured while tracker created")
         }
     }
     
-    @objc func setCategory(id: Int32) {
-        selectedCategory = id
+    @objc func setCategory(category: TrackerCategoryCoreData) {
+        selectedCategory = category
         checkState()
         trackerParamsTableView.reloadData()
     }
@@ -279,17 +279,17 @@ class NewTrackerViewController: UIViewController {
     }
     
     private func trackerIsReadyToBeCreated() -> Bool {
-        guard let category = selectedCategory,
+        guard let _ = selectedCategory,
               let _ = selectedEmoji,
               let _ = selectedColor
         else { return false }
         let trackerNameLength = trackerName.text?.count ?? 0
         let trackerNameIsOK = trackerNameLength > 0 && trackerNameLength <= 38
-        let categoryIsOK = category > 0
+        //let categoryIsOK = category > 0
         if trackerType == const.habit {
-            return selectedSchedule != nil && trackerNameIsOK && categoryIsOK
+            return selectedSchedule != nil && trackerNameIsOK// && categoryIsOK
         } else {
-            return trackerNameIsOK && categoryIsOK
+            return trackerNameIsOK// && categoryIsOK
         }
     }
     
@@ -306,7 +306,7 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: TrackerListCell.reuseIdentifier, for: indexPath) as? TrackerListCell else { return TrackerListCell() }
         if indexPath.row == 0 {
-            cell.cellValueText = categoryData?.getCategories().first(where: { $0.id == selectedCategory })?.name
+            cell.cellValueText = categoryData?.getCategories().first(where: { $0.id == selectedCategory?.id })?.name
         } else {
             cell.cellValueText = selectedSchedule?.text()
         }

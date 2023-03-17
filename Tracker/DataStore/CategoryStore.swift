@@ -25,8 +25,21 @@ final class CategoryStore: DataStoreDelegate {
         }
     }
     
+    func getFRCSections() -> [String] {
+        dataStore.getFRCSections()
+    }
+    
     func getCategoryNameById(id: Int32) -> String? {
         return getCategory(id)?.name
+    }
+    
+    func getCategoryEntity(id: Int32) -> TrackerCategoryCoreData? {
+        do {
+            let entity = try dataStore.getCategoryEntity(id)
+            return entity
+        } catch {
+            return nil
+        }
     }
     
     func updateCategory(id: Int, name: String) {

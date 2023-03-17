@@ -275,7 +275,6 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         trackerData?.dateFromDatePicker = dateFromDatePicker
         guard let currentDate = dateFromDatePicker else { return }
         if let searchText = trackerData?.searchQuery {
-            print(searchController.isActive)
             if searchController.isActive == false {
                 categories = prepareCategories(date: currentDate)
             } else {
@@ -339,7 +338,7 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         guard let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as? SupplementaryView else { return UICollectionReusableView() }
-        view.titleLabel.text = categoryData?.getCategoryNameById(id: categories?[indexPath.section].categoryId ?? 0)
+        view.titleLabel.text = categoryData?.getFRCSections()[indexPath.section]
         return view
     }
     

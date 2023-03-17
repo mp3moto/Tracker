@@ -177,7 +177,7 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
         categoriesTableViewIds.append(record.id)
         
         cell.cellText = record.name
-        if parentVC?.selectedCategory ?? 0 == record.id {
+        if parentVC?.selectedCategory == record {
             cell.checkmarkImage.isHidden = false
         } else {
             cell.checkmarkImage.isHidden = true
@@ -230,8 +230,8 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        parentVC?.setCategory(id: categoriesTableViewIds[indexPath.row])
-        //data.get
+        guard let categoryEntity = data?.getCategoryEntity(id: categoriesTableViewIds[indexPath.row]) else { return }
+        parentVC?.setCategory(category: categoryEntity)
         dismiss(animated: true)
     }
     
