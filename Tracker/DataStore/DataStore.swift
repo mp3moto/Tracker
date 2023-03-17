@@ -5,6 +5,7 @@ protocol DataStoreDelegate: AnyObject {
     func didUpdate()
 }
 
+// This helps to match single import CoreData requirement in sprint 15
 final class DataStoreHelper {
     var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "DataModel")
@@ -23,11 +24,21 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
     weak var categoriesDelegate: DataStoreDelegate?
     weak var trackersDelegate: DataStoreDelegate?
     weak var trackerRecordDelegate: DataStoreDelegate?
-    private var sqlQuery: String?
-    
     var searchQuery: String = ""
+    private var safeMode: Bool = false {
+        didSet {
+            if safeMode == true {
+                trackersFRC.fetchRequest.predicate = NSPredicate(format: "(schedule = NULL)")
+            } else {
+                trackersFRC.fetchRequest.predicate = NSPredicate(format: "(schedule & \(getWeekDay()) != 0) OR (schedule = NULL)")
+            }
+        }
+    }
     
     func prepareSQLQueryString() -> String {
+        if safeMode {
+            return "(schedule = NULL)"
+        }
         let defaultResult = "(schedule & \(getWeekDay()) != 0) OR (schedule = NULL)"
         if searchQuery.count > 0 {
             return "(\(defaultResult)) AND title CONTAINS[c] '\(searchQuery)'"
@@ -124,20 +135,20 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
             do {
                 let fetchedDoneData = try context.fetch(doneRequest)
                 trackersFRC.fetchedObjects?.forEach {
-                    let categoryId = $0.category?.id
+                    let category = $0.category?.name
                     let trackerId = $0.id
                     var schedule: Schedule?
                     if let _ = $0.schedule {
                         schedule = unpackShedule($0.schedule as? Int32 ?? 0)
                     }
-                    if let categoryId = categoryId {
+                    if let category = category {
                         trackers.append(
                             Tracker(
                                 id: trackerId,
                                 title: $0.title ?? const.noName,
                                 emoji: $0.emoji ?? const.emptyString,
                                 color: $0.color ?? const.defaultColor,
-                                categoryId: categoryId,
+                                category: category,
                                 schedule: schedule,
                                 done: fetchedDoneData.filter { $0.doneAt == dateFromDatePicker && $0.tracker?.id == trackerId }.count > 0
                             )
@@ -172,11 +183,32 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
     }
     
     func addTrackerRecord(doneAt: Date, trackerId: Int32) throws {
+        if let tracker = getTrackerEntity(trackerId) {
+            if tracker.schedule == nil {
+                tracker.schedule = 0
+            }
+            try context.save()
+        }
+        
+        
         let newTrackerRecord = TrackerRecordCoreData(context: context)
         newTrackerRecord.doneAt = doneAt
         newTrackerRecord.tracker = getTrackerEntity(trackerId)
+        try context.save()
+        
+        
+        if let tracker = getTrackerEntity(trackerId) {
+            if tracker.schedule == 0 {
+                tracker.schedule = nil
+                safeMode = true
+            }
+        }
         
         try context.save()
+        safeMode = false
+        
+        try trackersFRC.performFetch()
+        
     }
     
     func isTrackerDone(atDate: Date, trackerId: Int32) -> Bool {
@@ -207,12 +239,12 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
             newTracker.schedule = (schedule.packed()) as NSNumber
         } else {
             newTracker.schedule = nil
+            safeMode = true
         }
         newTracker.category = category
         
-        trackersFRC.fetchRequest.predicate = NSPredicate(format: "(schedule = NULL)")
         try context.save()
-        trackersFRC.fetchRequest.predicate = NSPredicate(format: "(schedule & \(getWeekDay()) != 0) OR (schedule = NULL)")
+        safeMode = true
         
         try trackersFRC.performFetch()
 
@@ -304,34 +336,12 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         }
     }
     
-    func getFRCSections() -> [String] {
-        let sections = trackersFRC.sections ?? []
-        var result: [String] = []
-        sections.forEach {
-            result.append($0.name)
-        }
-        
-        return result
-    }
-    
     func numberOfRowsInSectionForCategories(_ section: Int) -> Int {
         categoriesFRC.sections?[section].numberOfObjects ?? 0
     }
     
-    func numberOfSectionsForTrackers() -> Int {
-        trackersFRC.sections?.count ?? 0
-    }
-    
-    func numberOfRowsInSectionForTrackers(_ section: Int) -> Int {
-        trackersFRC.sections?[section].numberOfObjects ?? 0
-    }
-    
     func categoryObject(at indexPath: IndexPath) -> TrackerCategoryCoreData? {
         categoriesFRC.object(at: indexPath)
-    }
-    
-    func trackerObject(at indexPath: IndexPath) -> TrackerCoreData? {
-        trackersFRC.object(at: indexPath)
     }
     
     private func getNextId(for entity: String) -> Int32 {

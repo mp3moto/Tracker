@@ -15,7 +15,6 @@ final class TrackerStore: DataStoreDelegate {
         }
     }
     
-    
     func getTrackers() -> [Tracker] {
         let trackers = dataStore.trackers
         return trackers
@@ -34,18 +33,6 @@ final class TrackerStore: DataStoreDelegate {
     init(dataStore: DataStore) {
         self.dataStore = dataStore
         dataStore.trackersDelegate = self
-    }
-    
-    func numberOfSectionsForTrackers() -> Int {
-        dataStore.numberOfSectionsForTrackers()
-    }
-    
-    func object(at indexPath: IndexPath) -> TrackerCoreData? {
-        dataStore.trackerObject(at: indexPath)
-    }
-    
-    func numberOfRowsInSectionForTrackers(_ section: Int) -> Int {
-        dataStore.numberOfRowsInSectionForTrackers(section)
     }
     
     func didUpdate() {

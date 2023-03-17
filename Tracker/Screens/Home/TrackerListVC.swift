@@ -9,8 +9,6 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     private let searchController = UISearchController(searchResultsController: nil)
     private let collection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     private var categories: [TrackerCategory]?
-    private var visibleCategories: [TrackerCategory]?
-    private var completedTrackers: [TrackerRecord]?
     private var searchBarIsEmpty: Bool {
         guard let text = searchController.searchBar.text,
               text.count > 0
@@ -108,8 +106,9 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         configureNavigationBar()
         dateFromDatePicker = prepareDate(date: datePicker.date)
         guard let date = dateFromDatePicker else { return }
+        trackerData?.dateFromDatePicker = date
         
-        categories = prepareCategories(date: date)
+        categories = prepareCategories()
         
         collection.register(TrackerListItem.self, forCellWithReuseIdentifier: TrackerListItem.reuseIdentifier)
         collection.register(SupplementaryView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
@@ -129,31 +128,26 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         trackerData?.delegate = self
         trackerRecordData?.delegate = self
         
-        updateTrackers()
+        //updateTrackers()
         placeholderIfNeeded()
     }
     
-    private func prepareCategories(date: Date, searchText: String? = nil) -> [TrackerCategory] {
+    private func prepareCategories() -> [TrackerCategory] {
         var result: [TrackerCategory] = []
-        if let categories = categoryData?.getCategories() {
-            var searchQuery: String = "" {
-                didSet {
-                    trackerData?.searchQuery = searchQuery
-                }
+        
+        if let trackerData = trackerData {
+            let filteredTrackers = trackerData.getTrackers()
+            
+            var categoryNames: Set<String> = []
+            filteredTrackers.forEach {
+                categoryNames.insert($0.category)
             }
-            if let searchText = searchText { searchQuery = searchText }
-            for category in categories {
-                if let trackerData = trackerData {
-                    let filteredTrackers = trackerData.getTrackers()
-                    if filteredTrackers.count > 0 {
-                        result.append(TrackerCategory(categoryId: category.id, trackers: filteredTrackers))
-                    }
-                }
+            categoryNames.forEach {
+                let currentCategory = $0
+                result.append(TrackerCategory(category: currentCategory, trackers: filteredTrackers.filter { $0.category == currentCategory }))
             }
-            return result
-        } else {
-            return []
         }
+        return result
     }
     
     private func placeholderIfNeeded() {
@@ -273,16 +267,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     @objc private func updateTrackers() {
         dateFromDatePicker = prepareDate(date: datePicker.date)
         trackerData?.dateFromDatePicker = dateFromDatePicker
-        guard let currentDate = dateFromDatePicker else { return }
-        if let searchText = trackerData?.searchQuery {
-            if searchController.isActive == false {
-                categories = prepareCategories(date: currentDate)
-            } else {
-                categories = prepareCategories(date: currentDate, searchText: searchText)
-            }
-        } else {
-            categories = prepareCategories(date: currentDate)
-        }
+        categories = prepareCategories()
         collection.reloadData()
         placeholderIfNeeded()
     }
@@ -294,16 +279,16 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
 
 extension TrackerListViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        trackerData?.numberOfSectionsForTrackers() ?? 0
+        categories?.count ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        trackerData?.numberOfRowsInSectionForTrackers(section) ?? 0
+        categories?[section].trackers.count ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerListItem.reuseIdentifier, for: indexPath) as? TrackerListItem,
-              let tracker = trackerData?.object(at: indexPath),
+              let tracker = categories?[indexPath.section].trackers[indexPath.row], //trackerData?.object(at: indexPath),
               let dateFromDatePicker = dateFromDatePicker,
               let date = prepareDate(date: dateFromDatePicker),
               let done = trackerRecordData?.isTrackerDone(atDate: date, trackerId: tracker.id)
@@ -312,7 +297,7 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
         }
         cell.prepareForReuse()
         
-        let color = tracker.color ?? const.defaultColor
+        let color = tracker.color
         
         cell.itemBackground.backgroundColor = UIColor(named: color)
         cell.icon.text = tracker.emoji
@@ -338,7 +323,7 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         guard let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as? SupplementaryView else { return UICollectionReusableView() }
-        view.titleLabel.text = categoryData?.getFRCSections()[indexPath.section]
+        view.titleLabel.text = categories?[indexPath.section].category
         return view
     }
     

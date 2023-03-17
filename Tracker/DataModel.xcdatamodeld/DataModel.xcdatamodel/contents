@@ -16,6 +16,6 @@
     </entity>
     <entity name="TrackerRecordCoreData" representedClassName="TrackerRecordCoreData" syncable="YES" codeGenerationType="class">
         <attribute name="doneAt" attributeType="Date" usesScalarValueType="NO"/>
-        <relationship name="tracker" maxCount="1" deletionRule="Cascade" destinationEntity="TrackerCoreData" inverseName="record" inverseEntity="TrackerCoreData"/>
+        <relationship name="tracker" maxCount="1" deletionRule="Nullify" destinationEntity="TrackerCoreData" inverseName="record" inverseEntity="TrackerCoreData"/>
     </entity>
 </model>

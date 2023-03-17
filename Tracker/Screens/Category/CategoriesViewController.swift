@@ -217,7 +217,6 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
                     self.present(addCategoryVC, animated: true)
                 },
                 UIAction(title: "Удалить", attributes: .destructive) { [weak self] _ in
-                    //guard let row = indexPath.row else { self?.dismiss(animated: true) }
                     self?.data?.deleteCategory(self?.categoriesTableViewIds[indexPath.row] ?? 0)
                     self?.didUpdate()
                 }

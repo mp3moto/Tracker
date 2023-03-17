@@ -11,13 +11,13 @@ struct Tracker: Codable {
     let title: String
     let emoji: String
     let color: String
-    let categoryId: Int32
+    let category: String
     let schedule: Schedule?
     let done: Bool
 }
 
 struct TrackerCategory {
-    let categoryId: Int32
+    let category: String
     let trackers: [Tracker]
 }
 

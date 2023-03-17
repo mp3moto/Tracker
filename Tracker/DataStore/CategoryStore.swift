@@ -25,10 +25,6 @@ final class CategoryStore: DataStoreDelegate {
         }
     }
     
-    func getFRCSections() -> [String] {
-        dataStore.getFRCSections()
-    }
-    
     func getCategoryNameById(id: Int32) -> String? {
         return getCategory(id)?.name
     }

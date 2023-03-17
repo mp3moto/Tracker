@@ -285,11 +285,10 @@ class NewTrackerViewController: UIViewController {
         else { return false }
         let trackerNameLength = trackerName.text?.count ?? 0
         let trackerNameIsOK = trackerNameLength > 0 && trackerNameLength <= 38
-        //let categoryIsOK = category > 0
         if trackerType == const.habit {
-            return selectedSchedule != nil && trackerNameIsOK// && categoryIsOK
+            return selectedSchedule != nil && trackerNameIsOK
         } else {
-            return trackerNameIsOK// && categoryIsOK
+            return trackerNameIsOK
         }
     }
     
