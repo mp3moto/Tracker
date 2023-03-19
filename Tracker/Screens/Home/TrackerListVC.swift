@@ -128,7 +128,6 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         trackerData?.delegate = self
         trackerRecordData?.delegate = self
         
-        //updateTrackers()
         placeholderIfNeeded()
     }
     
@@ -258,7 +257,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
               let date = prepareDate(date: dateFromDatePicker)
         else { return }
         do {
-            try trackerRecordData?.addTrackerRecord(doneAt: date, trackerId: sender.tag)
+            try trackerRecordData?.toggleTrackerRecord(atDate: date, trackerId: Int32(sender.tag))
         } catch let error {
             print(error.localizedDescription)
         }
@@ -288,7 +287,7 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerListItem.reuseIdentifier, for: indexPath) as? TrackerListItem,
-              let tracker = categories?[indexPath.section].trackers[indexPath.row], //trackerData?.object(at: indexPath),
+              let tracker = categories?[indexPath.section].trackers[indexPath.row],
               let dateFromDatePicker = dateFromDatePicker,
               let date = prepareDate(date: dateFromDatePicker),
               let done = trackerRecordData?.isTrackerDone(atDate: date, trackerId: tracker.id)
@@ -302,7 +301,8 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
         cell.itemBackground.backgroundColor = UIColor(named: color)
         cell.icon.text = tracker.emoji
         cell.title.text = tracker.title
-        cell.doneButton.isEnabled = !done
+        cell.doneLabel.text = "\(tracker.doneCount) дней"
+        cell.doneButton.stateEnabled = !done
         cell.doneButton.backgroundColor = UIColor(named: color)
         cell.doneButton.tag = Int(tracker.id)
         cell.doneButton.addTarget(self, action: #selector(checkDone), for: .touchUpInside)

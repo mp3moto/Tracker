@@ -116,7 +116,7 @@ final class AddCategoryViewController: UIViewController {
     
     @objc private func addCategory() {
         do {
-            try _ = data?.addCategory(name: categoryName.text ?? const.noName)
+            try _ = data?.addCategory(name: categoryName.text ?? Const.noName)
             completion?()
         } catch let error {
             print(error.localizedDescription)
@@ -125,7 +125,7 @@ final class AddCategoryViewController: UIViewController {
     
     @objc private func updateCategory(sender: YPButton) {
         let data = CategoryStore(dataStore: store)
-        data.updateCategory(id: sender.tag, name: self.categoryName.text ?? const.noName)
+        data.updateCategory(id: sender.tag, name: self.categoryName.text ?? Const.noName)
         renameCompletion?()
         dismiss(animated: true)
     }

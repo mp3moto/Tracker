@@ -148,9 +148,7 @@ final class CategoriesViewCotroller: UIViewController {
             self?.updateCategories()
             self?.dismiss(animated: true)
         }
-        if let _ = data?.getCategories().count {
-            present(addCategoryVC, animated: true)
-        }
+        present(addCategoryVC, animated: true)
     }
 }
 

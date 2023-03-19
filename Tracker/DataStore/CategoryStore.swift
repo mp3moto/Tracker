@@ -18,11 +18,7 @@ final class CategoryStore: DataStoreDelegate {
     }
     
     func getCategory(_ id: Int32) -> Category? {
-        do {
-            return try dataStore.getCategory(id)
-        } catch {
-            return nil
-        }
+        return try? dataStore.getCategory(id)
     }
     
     func getCategoryNameById(id: Int32) -> String? {
@@ -30,12 +26,7 @@ final class CategoryStore: DataStoreDelegate {
     }
     
     func getCategoryEntity(id: Int32) -> TrackerCategoryCoreData? {
-        do {
-            let entity = try dataStore.getCategoryEntity(id)
-            return entity
-        } catch {
-            return nil
-        }
+        return try? dataStore.getCategoryEntity(id)
     }
     
     func updateCategory(id: Int, name: String) {

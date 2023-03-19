@@ -1,6 +1,6 @@
 import Foundation
 
-struct const {
+struct Const {
     static let modelName = "DataModel"
     static let noName = "Без названия"
     static let emptyString = ""

@@ -18,7 +18,6 @@ final class TrackerListCell: UITableViewCell {
     private let containerView: UIView = {
       let view = UIView()
       view.translatesAutoresizingMaskIntoConstraints = false
-      //view.clipsToBounds = true
       return view
     }()
     
@@ -77,10 +76,8 @@ final class TrackerListCell: UITableViewCell {
             cellTextArea.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
             cellTextArea.topAnchor.constraint(equalTo: titleLabel.topAnchor),
             cellTextArea.bottomAnchor.constraint(equalTo: selectedValueLabel.bottomAnchor),
-            //cellTextArea.heightAnchor.constraint(equalToConstant: 30),
             
             titleLabel.leadingAnchor.constraint(equalTo: cellTextArea.leadingAnchor),
-            //titleLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
             
             selectedValueLabel.leadingAnchor.constraint(equalTo: cellTextArea.leadingAnchor),
             selectedValueLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor),

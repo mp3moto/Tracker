@@ -7,7 +7,21 @@ final class TrackerRecordStore: DataStoreDelegate {
     
     private let dateFormatter = DateFormatter()
     
-    func addTrackerRecord(doneAt: Date, trackerId: Int) throws {
+    init(dataStore: DataStore) {
+        self.dataStore = dataStore
+        dataStore.trackerRecordDelegate = self
+    }
+    
+    func toggleTrackerRecord(atDate: Date, trackerId: Int32) throws {
+        do {
+            isTrackerDone(atDate: atDate, trackerId: trackerId) ? try deleteTrackerDone(atDate: atDate, trackerId: trackerId) : try addTrackerRecord(doneAt: atDate, trackerId: trackerId)
+            didUpdate()
+        } catch let error {
+            print(error.localizedDescription)
+        }
+    }
+    
+    func addTrackerRecord(doneAt: Date, trackerId: Int32) throws {
         do {
             try dataStore.addTrackerRecord(doneAt: doneAt, trackerId: Int32(trackerId))
             delegate?.didUpdate()
@@ -16,9 +30,9 @@ final class TrackerRecordStore: DataStoreDelegate {
         }
     }
     
-    func deleteTrackerDone(onDate: Date, trackerId: Int) throws {
+    func deleteTrackerDone(atDate: Date, trackerId: Int32) throws {
         do {
-            try dataStore.deleteTrackerDone(atDate: onDate, trackerId: trackerId)
+            try dataStore.deleteTrackerDone(atDate: atDate, trackerId: trackerId)
         } catch let error {
             print(error.localizedDescription)
         }
@@ -26,11 +40,6 @@ final class TrackerRecordStore: DataStoreDelegate {
     
     func isTrackerDone(atDate: Date, trackerId: Int32) -> Bool {
         dataStore.isTrackerDone(atDate: atDate, trackerId: trackerId)
-    }
-    
-    init(dataStore: DataStore) {
-        self.dataStore = dataStore
-        dataStore.trackerRecordDelegate = self
     }
     
     func didUpdate() {

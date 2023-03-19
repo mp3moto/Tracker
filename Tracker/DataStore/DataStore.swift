@@ -35,6 +35,15 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         }
     }
     
+    init(context: NSManagedObjectContext) {
+        self.context = context
+    }
+    
+    override convenience init() {
+        let helper = DataStoreHelper()
+        self.init(context: helper.persistentContainer.viewContext)
+    }
+    
     func prepareSQLQueryString() -> String {
         if safeMode {
             return "(schedule = NULL)"
@@ -73,35 +82,26 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         return fetchResultsController
     }()
     
-    init(context: NSManagedObjectContext) {
-        self.context = context
-    }
-    
-    override convenience init() {
-        let helper = DataStoreHelper()
-        self.init(context: helper.persistentContainer.viewContext)
-    }
-    
     var categories: [Category] {
         get {
             var categories: [Category] = []
                 let fetchedData = categoriesFRC.fetchedObjects
                 fetchedData?.forEach {
-                    categories.append(Category(id: $0.id, name: $0.name ?? const.noName))
+                    categories.append(Category(id: $0.id, name: $0.name ?? Const.noName))
                 }
             return categories
         }
     }
     
-    func unpackShedule(_ packed: Int32) -> Schedule {
+    func unpackSсhedule(_ packed: Int32) -> Schedule {
         Schedule(
-            mon: packed & 64 == 64 ? true : false,
-            tue: packed & 32 == 32 ? true : false,
-            wed: packed & 16 == 16 ? true : false,
-            thu: packed & 8 == 8 ? true : false,
-            fri: packed & 4 == 4 ? true : false,
-            sat: packed & 2 == 2 ? true : false,
-            sun: packed & 1 == 1 ? true : false
+            mon: packed & 64 == 64,
+            tue: packed & 32 == 32,
+            wed: packed & 16 == 16,
+            thu: packed & 8 == 8,
+            fri: packed & 4 == 4,
+            sat: packed & 2 == 2,
+            sun: packed & 1 == 1
         )
     }
     
@@ -139,17 +139,18 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
                     let trackerId = $0.id
                     var schedule: Schedule?
                     if let _ = $0.schedule {
-                        schedule = unpackShedule($0.schedule as? Int32 ?? 0)
+                        schedule = unpackSсhedule($0.schedule as? Int32 ?? 0)
                     }
                     if let category = category {
                         trackers.append(
                             Tracker(
                                 id: trackerId,
-                                title: $0.title ?? const.noName,
-                                emoji: $0.emoji ?? const.emptyString,
-                                color: $0.color ?? const.defaultColor,
+                                title: $0.title ?? Const.noName,
+                                emoji: $0.emoji ?? Const.emptyString,
+                                color: $0.color ?? Const.defaultColor,
                                 category: category,
                                 schedule: schedule,
+                                doneCount: fetchedDoneData.filter { $0.tracker?.id == trackerId }.count,
                                 done: fetchedDoneData.filter { $0.doneAt == dateFromDatePicker && $0.tracker?.id == trackerId }.count > 0
                             )
                         )
@@ -181,7 +182,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
             }
         }
     }
-    
+
     func addTrackerRecord(doneAt: Date, trackerId: Int32) throws {
         if let tracker = getTrackerEntity(trackerId) {
             if tracker.schedule == nil {
@@ -189,14 +190,12 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
             }
             try context.save()
         }
-        
-        
+
         let newTrackerRecord = TrackerRecordCoreData(context: context)
         newTrackerRecord.doneAt = doneAt
         newTrackerRecord.tracker = getTrackerEntity(trackerId)
         try context.save()
-        
-        
+
         if let tracker = getTrackerEntity(trackerId) {
             if tracker.schedule == 0 {
                 tracker.schedule = nil
@@ -206,22 +205,35 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         
         try context.save()
         safeMode = false
+    }
+    
+    func getTrackerRecordEntity(doneAt: Date, trackerId: Int32) -> TrackerRecordCoreData? {
+        guard let tracker = getTrackerEntity(trackerId) else { return nil }
+        if tracker.schedule == nil {
+            safeMode = true
+        }
+        var trackerRecord: TrackerRecordCoreData?
+        let fetchRequest = NSFetchRequest<TrackerRecordCoreData>(entityName: "TrackerRecordCoreData")
+        fetchRequest.returnsObjectsAsFaults = false
         
-        try trackersFRC.performFetch()
+        let fetchedResults = try? context.fetch(fetchRequest)
+        trackerRecord = fetchedResults?.filter { $0.tracker == tracker && $0.doneAt == doneAt }.first
         
+        return trackerRecord
     }
     
     func isTrackerDone(atDate: Date, trackerId: Int32) -> Bool {
         trackerRecords.filter { $0.trackerId == trackerId && $0.doneAt == atDate }.count > 0 ? true : false
     }
     
-    func deleteTrackerDone(atDate: Date, trackerId: Int) throws {
-        guard let trackerRecord = trackerRecords.filter({ $0.trackerId == trackerId && $0.doneAt == atDate }) as? [NSManagedObject],
-              let record = trackerRecord.first
-        else { return }
+    func deleteTrackerDone(atDate: Date, trackerId: Int32) throws {
+        guard let trackerRecord = getTrackerRecordEntity(doneAt: atDate, trackerId: trackerId) else { return }
         do {
-            context.delete(record)
+            context.delete(trackerRecord)
             try context.save()
+            if safeMode == true {
+                safeMode = false
+            }
         } catch let error {
             print(error.localizedDescription)
         }
@@ -244,7 +256,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         newTracker.category = category
         
         try context.save()
-        safeMode = true
+        safeMode = false
         
         try trackersFRC.performFetch()
 
@@ -275,7 +287,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         
         let fetchedResults = try? context.fetch(fetchRequest)
         if let category = fetchedResults?.first {
-            return Category(id: category.id, name: category.name ?? const.noName)
+            return Category(id: category.id, name: category.name ?? Const.noName)
         } else {
             return nil
         }
@@ -347,10 +359,27 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
     private func getNextId(for entity: String) -> Int32 {
         var maxId: Int32?
         switch entity {
-        case "category": maxId = categories.max(by: { a, b in a.id < b.id })?.id
-        case "tracker": maxId = trackers.max(by: { a, b in a.id < b.id })?.id
+        case "category":
+            let fetchRequest = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
+            fetchRequest.sortDescriptors = [ NSSortDescriptor(key: "id", ascending: false) ]
+            let fetchedResults = try? context.fetch(fetchRequest)
+            if let category = fetchedResults?.first {
+                maxId = category.id
+            } else {
+                maxId = 0
+            }
+        case "tracker":
+            let fetchRequest = NSFetchRequest<TrackerCoreData>(entityName: "TrackerCoreData")
+            fetchRequest.sortDescriptors = [ NSSortDescriptor(key: "id", ascending: false) ]
+            let fetchedResults = try? context.fetch(fetchRequest)
+            if let tracker = fetchedResults?.first {
+                maxId = tracker.id
+            } else {
+                maxId = 0
+            }
         default: maxId = 0
         }
+        
         if let maxId = maxId {
             let nextId = maxId + 1
             guard nextId > 0 else { return 1 }

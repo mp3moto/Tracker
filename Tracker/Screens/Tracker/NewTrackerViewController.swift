@@ -37,7 +37,7 @@ class NewTrackerViewController: UIViewController {
     
     private let trackerNameHint: UILabel = {
         let label = UILabel()
-        label.text = "Ограничение \(const.trackerNameLengthLimit) символов"
+        label.text = "Ограничение \(Const.trackerNameLengthLimit) символов"
         label.textColor = UIColor(named: "YPRed")
         label.font = UIFont(name: "YSDisplay-Medium", size: 17)
         label.textAlignment = .center
@@ -61,7 +61,7 @@ class NewTrackerViewController: UIViewController {
     init(trackerType: String, store: DataStore) {
         self.trackerType = trackerType
         self.store = store
-        if trackerType == const.habit {
+        if trackerType == Const.habit {
             trackerParamsTableViewValues = ["Категория", "Расписание"]
         } else {
             trackerParamsTableViewValues = ["Категория"]
@@ -164,7 +164,6 @@ class NewTrackerViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             trackerParamsTableView.widthAnchor.constraint(equalTo: pageContentView.widthAnchor),
-            //trackerParamsTableView.topAnchor.constraint(equalTo: trackerName.bottomAnchor, constant: 24),
             trackerParamsTableView.heightAnchor.constraint(equalToConstant: CGFloat(trackerParamsTableViewRowsCount * 75))
         ])
         
@@ -261,7 +260,7 @@ class NewTrackerViewController: UIViewController {
     
     @objc private func checkState() {
         let trackerNameLength = trackerName.text?.count ?? 0
-        if trackerNameLength > const.trackerNameLengthLimit {
+        if trackerNameLength > Const.trackerNameLengthLimit {
             constraint1.isActive = false
             constraint2.isActive = true
             trackerNameHint.layer.opacity = 1
@@ -285,7 +284,7 @@ class NewTrackerViewController: UIViewController {
         else { return false }
         let trackerNameLength = trackerName.text?.count ?? 0
         let trackerNameIsOK = trackerNameLength > 0 && trackerNameLength <= 38
-        if trackerType == const.habit {
+        if trackerType == Const.habit {
             return selectedSchedule != nil && trackerNameIsOK
         } else {
             return trackerNameIsOK

@@ -2,9 +2,9 @@ import UIKit
 
 final class DoneButton: UIButton {
     
-    override var isEnabled: Bool {
+    var stateEnabled: Bool = true {
         didSet {
-            if isEnabled == false {
+            if stateEnabled == false {
                 layer.opacity = 0.3
                 setImage(UIImage(named: "doneIcon"), for: .normal)
             } else {

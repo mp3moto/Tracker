@@ -15,6 +15,11 @@ final class TrackerStore: DataStoreDelegate {
         }
     }
     
+    init(dataStore: DataStore) {
+        self.dataStore = dataStore
+        dataStore.trackersDelegate = self
+    }
+    
     func getTrackers() -> [Tracker] {
         let trackers = dataStore.trackers
         return trackers
@@ -28,11 +33,6 @@ final class TrackerStore: DataStoreDelegate {
             print(error.localizedDescription)
             return 0
         }
-    }
-    
-    init(dataStore: DataStore) {
-        self.dataStore = dataStore
-        dataStore.trackersDelegate = self
     }
     
     func didUpdate() {

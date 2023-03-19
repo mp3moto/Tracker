@@ -13,6 +13,7 @@ struct Tracker: Codable {
     let color: String
     let category: String
     let schedule: Schedule?
+    let doneCount: Int
     let done: Bool
 }
 
