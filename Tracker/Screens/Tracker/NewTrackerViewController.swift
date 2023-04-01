@@ -304,7 +304,8 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: TrackerListCell.reuseIdentifier, for: indexPath) as? TrackerListCell else { return TrackerListCell() }
         if indexPath.row == 0 {
-            cell.cellValueText = categoryData?.getCategories().first(where: { $0.id == selectedCategory?.id })?.name
+            //cell.cellValueText = categoryData?.getCategories().first(where: { $0.id == selectedCategory?.id })?.name
+            cell.cellValueText = selectedCategory?.name
         } else {
             cell.cellValueText = selectedSchedule?.text()
         }

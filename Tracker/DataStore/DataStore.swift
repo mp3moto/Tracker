@@ -19,18 +19,18 @@ final class DataStoreHelper {
 }
 
 final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
-    private let context: NSManagedObjectContext
+    let context: NSManagedObjectContext
     var dateFromDatePicker: Date?
     weak var categoriesDelegate: DataStoreDelegate?
     weak var trackersDelegate: DataStoreDelegate?
     weak var trackerRecordDelegate: DataStoreDelegate?
-    var searchQuery: String = ""
-    private var safeMode: Bool = false {
+    //var searchQuery: String = ""
+    var safeMode: Bool = false {
         didSet {
             if safeMode == true {
                 trackersFRC.fetchRequest.predicate = NSPredicate(format: "(schedule = NULL)")
             } else {
-                trackersFRC.fetchRequest.predicate = NSPredicate(format: "(schedule & \(getWeekDay()) != 0) OR (schedule = NULL)")
+                trackersFRC.fetchRequest.predicate = NSPredicate(format: "(schedule & \(dateFromDatePicker?.getWeekDay() ?? Date().getWeekDay()) != 0) OR (schedule = NULL)")
             }
         }
     }
@@ -43,7 +43,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         let helper = DataStoreHelper()
         self.init(context: helper.persistentContainer.viewContext)
     }
-    
+    /*
     func prepareSQLQueryString() -> String {
         if safeMode {
             return "(schedule = NULL)"
@@ -56,7 +56,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
             return defaultResult
         }
     }
-    
+    */
     private lazy var categoriesFRC: NSFetchedResultsController<TrackerCategoryCoreData> = {
         let fetchRequest = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
@@ -69,7 +69,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
     
     private lazy var trackersFRC: NSFetchedResultsController<TrackerCoreData> = {
         let fetchRequest = NSFetchRequest<TrackerCoreData>(entityName: "TrackerCoreData")
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "title", ascending: false)]
         let fetchResultsController = NSFetchedResultsController(
             fetchRequest: fetchRequest,
             managedObjectContext: context,
@@ -87,12 +87,12 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
             var categories: [Category] = []
                 let fetchedData = categoriesFRC.fetchedObjects
                 fetchedData?.forEach {
-                    categories.append(Category(id: $0.id, name: $0.name ?? Const.noName))
+                    categories.append(Category(/*id: $0.id, */name: $0.name ?? Const.noName))
                 }
             return categories
         }
     }
-    
+    /*
     func unpackSсhedule(_ packed: Int32) -> Schedule {
         Schedule(
             mon: packed & 64 == 64,
@@ -120,14 +120,16 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         default: return 0
         }
     }
+    */
+    //func getTrackers()
     
-    var trackers: [Tracker] {
+    /*var trackers: [Tracker] {
         get {
              do {
                 trackersFRC.fetchRequest.predicate = NSPredicate(format: prepareSQLQueryString())
                 try trackersFRC.performFetch()
             } catch let error {
-                print(error.localizedDescription)
+                fatalError(error.localizedDescription)
             }
             
             let doneRequest = NSFetchRequest<TrackerRecordCoreData>(entityName: "TrackerRecordCoreData")
@@ -144,7 +146,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
                     if let category = category {
                         trackers.append(
                             Tracker(
-                                id: trackerId,
+                                //id: trackerId,
                                 title: $0.title ?? Const.noName,
                                 emoji: $0.emoji ?? Const.emptyString,
                                 color: $0.color ?? Const.defaultColor,
@@ -162,7 +164,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
                 return trackers
             }
         }
-    }
+    }*/
     
     var trackerRecords: [TrackerRecord] {
         get {
@@ -171,9 +173,9 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
             do {
                 let fetchedData = try context.fetch(request)
                 fetchedData.forEach {
-                    guard let id = $0.tracker?.id,
+                    guard //let id = $0.tracker?.id,
                           let date = $0.doneAt else { return }
-                    trackerRecords.append(TrackerRecord(trackerId: id, doneAt: date))
+                    trackerRecords.append(TrackerRecord(/*trackerId: id, */doneAt: date))
                 }
                 return trackerRecords
             } catch let error {
@@ -222,8 +224,8 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         return trackerRecord
     }
     
-    func isTrackerDone(atDate: Date, trackerId: Int32) -> Bool {
-        trackerRecords.filter { $0.trackerId == trackerId && $0.doneAt == atDate }.count > 0 ? true : false
+    func isTrackerDone(atDate: Date/*, trackerId: Int32*/) -> Bool {
+        trackerRecords.filter { /*$0.trackerId == trackerId && */$0.doneAt == atDate }.count > 0 ? true : false
     }
     
     func deleteTrackerDone(atDate: Date, trackerId: Int32) throws {
@@ -239,28 +241,24 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         }
     }
     
-    func addTracker(title: String, emoji: String, color: String, category: TrackerCategoryCoreData, schedule: Schedule?) throws -> Int32 {
-        let id = getNextId(for: "tracker")
-        
-        let newTracker = TrackerCoreData(context: context)
-        newTracker.id = id
-        newTracker.title = title
-        newTracker.emoji = emoji
-        newTracker.color = color
-        if let schedule = schedule {
-            newTracker.schedule = (schedule.packed()) as NSNumber
-        } else {
-            newTracker.schedule = nil
-            safeMode = true
-        }
-        newTracker.category = category
-        
+    func saveRecord<E: NSManagedObject>(object: E) throws {
         try context.save()
         safeMode = false
-        
-        try trackersFRC.performFetch()
-
-        return id
+    }
+    
+    func deleteRecord<E: NSManagedObject>(object: E) throws {
+        context.delete(object)
+        try context.save()
+    }
+    
+    func getRecords<E: NSManagedObject>(className: CoreDataClasses, sql: String) -> [E] {
+        switch className {
+        case .TrackerCoreData:
+            trackersFRC.fetchRequest.predicate = NSPredicate(format: "\(sql)")
+            try? trackersFRC.performFetch()
+            guard let objects = trackersFRC.fetchedObjects as? [E] else { return [] }
+            return objects
+        }
     }
     
     func getTrackerEntity(_ id: Int32) -> TrackerCoreData? {
@@ -280,74 +278,6 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         categoriesFRC.sections?.count ?? 0
     }
     
-    func getCategory(_ id: Int32) throws -> Category? {
-        let fetchRequest = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
-        fetchRequest.predicate = NSPredicate(format: "id = %@", "\(id)")
-        fetchRequest.returnsObjectsAsFaults = false
-        
-        let fetchedResults = try? context.fetch(fetchRequest)
-        if let category = fetchedResults?.first {
-            return Category(id: category.id, name: category.name ?? Const.noName)
-        } else {
-            return nil
-        }
-    }
-    
-    func getCategoryEntity(_ id: Int32) throws -> TrackerCategoryCoreData? {
-        let fetchRequest = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
-        fetchRequest.predicate = NSPredicate(format: "id = %@", "\(id)")
-        fetchRequest.returnsObjectsAsFaults = false
-        
-        let fetchedResults = try? context.fetch(fetchRequest)
-        if let category = fetchedResults?.first {
-            return category
-        } else {
-            return nil
-        }
-    }
-    
-    func addCategory(name: String) throws -> Int32 {
-        let id = getNextId(for: "category")
-        
-        let newCategory = TrackerCategoryCoreData(context: context)
-        newCategory.id = id
-        newCategory.name = name
-
-        try context.save()
-
-        return id
-    }
-    
-    func updateCategory(id: Int, name: String) throws {
-        let fetchRequest = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
-        fetchRequest.predicate = NSPredicate(format: "id = %@", "\(id)")
-        fetchRequest.returnsObjectsAsFaults = false
-        do {
-            let fetchedResults = try? context.fetch(fetchRequest)
-            if let category = fetchedResults?.first {
-                category.name = name
-                try context.save()
-            }
-        } catch let error {
-            print(error.localizedDescription)
-        }
-    }
-    
-    func deleteCategory(_ id: Int32) throws {
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "TrackerCategoryCoreData")
-        fetchRequest.predicate = NSPredicate(format: "id = %@", "\(id)")
-        fetchRequest.returnsObjectsAsFaults = false
-        do {
-            guard let fetchedResults = try context.fetch(fetchRequest) as? [NSManagedObject] else { return }
-            for record in fetchedResults {
-                context.delete(record)
-            }
-            try context.save()
-        } catch let error {
-            print(error.localizedDescription)
-        }
-    }
-    
     func numberOfRowsInSectionForCategories(_ section: Int) -> Int {
         categoriesFRC.sections?[section].numberOfObjects ?? 0
     }
@@ -355,7 +285,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
     func categoryObject(at indexPath: IndexPath) -> TrackerCategoryCoreData? {
         categoriesFRC.object(at: indexPath)
     }
-    
+    /*
     private func getNextId(for entity: String) -> Int32 {
         var maxId: Int32?
         switch entity {
@@ -368,6 +298,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
             } else {
                 maxId = 0
             }
+        
         case "tracker":
             let fetchRequest = NSFetchRequest<TrackerCoreData>(entityName: "TrackerCoreData")
             fetchRequest.sortDescriptors = [ NSSortDescriptor(key: "id", ascending: false) ]
@@ -377,6 +308,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
             } else {
                 maxId = 0
             }
+        
         default: maxId = 0
         }
         
@@ -388,7 +320,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
             return 1
         }
     }
-    
+    */
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         switch controller {
         case categoriesFRC:

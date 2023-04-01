@@ -20,7 +20,7 @@ final class OnboardingViewController: UIPageViewController {
         dataSource = self
         delegate = self
         
-        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first)
+        //print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first)
         
         orderedViewControllers = [onboarding_01, onboarding_02]
         

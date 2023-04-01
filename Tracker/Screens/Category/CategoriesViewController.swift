@@ -5,7 +5,7 @@ final class CategoriesViewCotroller: UIViewController {
     private let data: CategoryStore?
     private let categoriesTableView = UITableView()
     private var lastCategoriesCount: Int = 0
-    private var categoriesTableViewIds: [Int32] = []
+    private var categoriesTableViewIds: [TrackerCategoryCoreData] = []
     weak var parentVC: NewTrackerViewController?
     var categoryCompletion: (() -> Void)?
     
@@ -172,9 +172,10 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
               let data = data
         else { return CategoryListCell() }
 
-        categoriesTableViewIds.append(record.id)
+        categoriesTableViewIds.append(record)
         
         cell.cellText = record.name
+        //cell.tag = record
         if parentVC?.selectedCategory == record {
             cell.checkmarkImage.isHidden = false
         } else {
@@ -214,9 +215,15 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
                     self.lastCategoriesCount = self.data?.count ?? 0
                     self.present(addCategoryVC, animated: true)
                 },
+                
                 UIAction(title: "Удалить", attributes: .destructive) { [weak self] _ in
-                    self?.data?.deleteCategory(self?.categoriesTableViewIds[indexPath.row] ?? 0)
-                    self?.didUpdate()
+                    guard let self = self else { return }
+                    do {
+                        try self.data?.deleteCategory(self.categoriesTableViewIds[indexPath.row])
+                        self.didUpdate()
+                    } catch let error {
+                        fatalError(error.localizedDescription)
+                    }
                 }
             ])
         })
@@ -227,8 +234,9 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let categoryEntity = data?.getCategoryEntity(id: categoriesTableViewIds[indexPath.row]) else { return }
-        parentVC?.setCategory(category: categoryEntity)
+        //guard let categoryEntity = data?.getCategoryEntity(id: categoriesTableViewIds[indexPath.row]) else { return }
+        //let categoryEntity = categoriesTableViewIds[indexPath.row]
+        parentVC?.setCategory(category: categoriesTableViewIds[indexPath.row])
         dismiss(animated: true)
     }
     

@@ -8,3 +8,7 @@ struct Const {
     static let trackerNameLengthLimit = 38
     static let habit = "habit"
 }
+
+enum CoreDataClasses: String {
+    case TrackerCoreData
+}

@@ -14,7 +14,7 @@ final class TrackerRecordStore: DataStoreDelegate {
     
     func toggleTrackerRecord(atDate: Date, trackerId: Int32) throws {
         do {
-            isTrackerDone(atDate: atDate, trackerId: trackerId) ? try deleteTrackerDone(atDate: atDate, trackerId: trackerId) : try addTrackerRecord(doneAt: atDate, trackerId: trackerId)
+            isTrackerDone(atDate: atDate/*, trackerId: trackerId*/) ? try deleteTrackerDone(atDate: atDate, trackerId: trackerId) : try addTrackerRecord(doneAt: atDate, trackerId: trackerId)
             didUpdate()
         } catch let error {
             print(error.localizedDescription)
@@ -38,8 +38,8 @@ final class TrackerRecordStore: DataStoreDelegate {
         }
     }
     
-    func isTrackerDone(atDate: Date, trackerId: Int32) -> Bool {
-        dataStore.isTrackerDone(atDate: atDate, trackerId: trackerId)
+    func isTrackerDone(atDate: Date/*, trackerId: Int32*/) -> Bool {
+        dataStore.isTrackerDone(atDate: atDate/*, trackerId: trackerId*/)
     }
     
     func didUpdate() {

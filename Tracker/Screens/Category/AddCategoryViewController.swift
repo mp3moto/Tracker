@@ -4,7 +4,7 @@ final class AddCategoryViewController: UIViewController {
     private let store: DataStore
     var completion: (() -> Void)?
     var renameCompletion: (() -> Void)?
-    var categoryId: Int32?
+    var categoryId: TrackerCategoryCoreData?
     
     private let data: CategoryStore?
     
@@ -96,7 +96,6 @@ final class AddCategoryViewController: UIViewController {
                 addCategoryButton.setTitle("Готово", for: .normal)
                 categoryName.text = category.name
                 addCategoryButton.removeTarget(self, action: #selector(addCategory), for: .touchUpInside)
-                addCategoryButton.tag = Int(category.id)
                 addCategoryButton.addTarget(self, action: #selector(updateCategory), for: .touchUpInside)
             } else {
                 dismiss(animated: true)
@@ -124,9 +123,14 @@ final class AddCategoryViewController: UIViewController {
     }
     
     @objc private func updateCategory(sender: YPButton) {
+        guard let categoryId = categoryId else { return }
         let data = CategoryStore(dataStore: store)
-        data.updateCategory(id: sender.tag, name: self.categoryName.text ?? Const.noName)
-        renameCompletion?()
-        dismiss(animated: true)
+        do {
+            try data.updateCategory(id: categoryId, name: categoryName.text ?? Const.noName)
+            renameCompletion?()
+            dismiss(animated: true)
+        } catch let error {
+            fatalError(error.localizedDescription)
+        }
     }
 }

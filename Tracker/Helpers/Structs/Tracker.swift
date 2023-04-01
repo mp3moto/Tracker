@@ -7,7 +7,7 @@ struct TrackersStoreUpdate {
 }
 
 struct Tracker: Codable {
-    let id: Int32
+    //let id: Int32
     let title: String
     let emoji: String
     let color: String
@@ -23,6 +23,6 @@ struct TrackerCategory {
 }
 
 struct TrackerRecord {
-    let trackerId: Int32
+    //let trackerId: Int32
     let doneAt: Date
 }

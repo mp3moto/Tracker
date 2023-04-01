@@ -17,38 +17,33 @@ final class CategoryStore: DataStoreDelegate {
         return categories
     }
     
-    func getCategory(_ id: Int32) -> Category? {
-        return try? dataStore.getCategory(id)
+    
+    func getCategory(_ id: TrackerCategoryCoreData) -> Category? {
+        return Category(name: id.name ?? Const.noName)
     }
     
-    func getCategoryNameById(id: Int32) -> String? {
-        return getCategory(id)?.name
-    }
-    
-    func getCategoryEntity(id: Int32) -> TrackerCategoryCoreData? {
-        return try? dataStore.getCategoryEntity(id)
-    }
-    
-    func updateCategory(id: Int, name: String) {
+    func updateCategory(id: TrackerCategoryCoreData, name: String) throws {
         do {
-            return try dataStore.updateCategory(id: id, name: name)
+            id.name = name
+            try dataStore.saveRecord(object: id)
         } catch let error {
             print(error.localizedDescription)
         }
     }
     
-    func addCategory(name: String) throws -> Int32 {
+    func addCategory(name: String) throws {
         do {
-            return try dataStore.addCategory(name: name)
-        } catch {
-            print("catch in action in CategoryStore")
-            return 0
+            let newCategory = TrackerCategoryCoreData(context: dataStore.context)
+            newCategory.name = name
+            try dataStore.saveRecord(object: newCategory)
+        } catch let error {
+            fatalError(error.localizedDescription)
         }
     }
     
-    func deleteCategory(_ id: Int32) {
+    func deleteCategory(_ id: TrackerCategoryCoreData) throws {
         do {
-            try dataStore.deleteCategory(id)
+            try dataStore.deleteRecord(object: id)
         } catch let error {
             print(error.localizedDescription)
         }
