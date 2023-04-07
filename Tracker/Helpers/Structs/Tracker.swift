@@ -6,8 +6,8 @@ struct TrackersStoreUpdate {
     let updatedIndexes: IndexSet
 }
 
-struct Tracker: Codable {
-    //let id: Int32
+struct Tracker {
+    let id: TrackerCoreData
     let title: String
     let emoji: String
     let color: String
@@ -23,6 +23,6 @@ struct TrackerCategory {
 }
 
 struct TrackerRecord {
-    //let trackerId: Int32
+    let trackerId: TrackerCoreData
     let doneAt: Date
 }

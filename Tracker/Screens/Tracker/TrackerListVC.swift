@@ -2,7 +2,6 @@ import UIKit
 
 final class TrackerListViewController: UIViewController, DataStoreDelegate {
     private var store: DataStore
-    //private var trackerIds: [TrackerCoreData] = []
     private var trackerData: TrackerStore?
     private var categoryData: CategoryStore?
     private var trackerRecordData: TrackerRecordStore?
@@ -10,6 +9,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     private let searchController = UISearchController(searchResultsController: nil)
     private let collection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     private var categories: [TrackerCategory]?
+    private var trackerIds: [TrackerCoreData] = []
     private var searchBarIsEmpty: Bool {
         guard let text = searchController.searchBar.text,
               text.count > 0
@@ -97,6 +97,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         categoryData = CategoryStore(dataStore: store)
         trackerData = TrackerStore(dataStore: store)
         trackerRecordData = TrackerRecordStore(dataStore: store)
+        trackerData?.trackerRecordStore = trackerRecordData
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -107,11 +108,9 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
-        
         view.backgroundColor = UIColor(named: "YPWhite")
         configureNavigationBar()
-        dateFromDatePicker = prepareDate(date: datePicker.date)
+        dateFromDatePicker = datePicker.date.prepareDate()
         guard let date = dateFromDatePicker else { return }
         trackerData?.dateFromDatePicker = date
         
@@ -141,20 +140,24 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     private func prepareCategories() -> [TrackerCategory] {
         var result: [TrackerCategory] = []
         
-        if let trackerData = trackerData {
-            let filteredTrackers = trackerData.getTrackers()
-            
-            var categoryNames: Set<String> = []
-            filteredTrackers.forEach {
+         if let trackerData = trackerData {
+             let filteredTrackers = trackerData.getTrackers()
+         
+             var categoryNames: Set<String> = []
+             filteredTrackers.forEach {
                 categoryNames.insert($0.category)
-            }
-            categoryNames.forEach {
-                let currentCategory = $0
-                result.append(TrackerCategory(category: currentCategory, trackers: filteredTrackers.filter { $0.category == currentCategory }))
-            }
-        }
+             }
+             let categoryNamesSorted = categoryNames.sorted()
+             categoryNamesSorted.forEach {
+                 let currentCategory = $0
+                 result.append(TrackerCategory(category: currentCategory, trackers: filteredTrackers.filter { $0.category == currentCategory }))
+             }
+         }
+        
         return result
     }
+         
+    
     
     private func placeholderIfNeeded() {
         if noTrackersView.isDescendant(of: collection) {
@@ -260,20 +263,17 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     }
     
     @objc private func checkDone(sender: DoneButton) {
-        guard let dateFromDatePicker = dateFromDatePicker,
-              let date = prepareDate(date: dateFromDatePicker)
-        else { return }
+        guard let date = dateFromDatePicker else { return }
         do {
-            try trackerRecordData?.toggleTrackerRecord(atDate: date, trackerId: Int32(sender.tag))
+            try trackerRecordData?.toggleTrackerRecord(doneAt: date, trackerId: trackerIds[sender.tag])
         } catch let error {
             print(error.localizedDescription)
         }
     }
     
     @objc private func updateTrackers() {
+        trackerIds = []
         dateFromDatePicker = datePicker.date.prepareDate()
-        //dateFromDatePicker = prepareDate(date: datePicker.date)
-        //trackerData?.dateFromDatePicker = dateFromDatePicker
         categories = prepareCategories()
         collection.reloadData()
         placeholderIfNeeded()
@@ -297,9 +297,7 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerListItem.reuseIdentifier, for: indexPath) as? TrackerListItem,
               let tracker = categories?[indexPath.section].trackers[indexPath.row],
               let dateFromDatePicker = dateFromDatePicker,
-              //let date = prepareDate(date: dateFromDatePicker),
-              //let date = dateFromDatePicker,
-              let done = trackerRecordData?.isTrackerDone(atDate: dateFromDatePicker/*, trackerId: tracker.id*/)
+              let done = trackerRecordData?.isTrackerDone(doneAt: dateFromDatePicker, trackerId: tracker.id)
         else {
             return UICollectionViewCell()
         }
@@ -313,8 +311,8 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
         cell.doneLabel.text = "\(tracker.doneCount) дней"
         cell.doneButton.stateEnabled = !done
         cell.doneButton.backgroundColor = UIColor(named: color)
-        //trackerIds[indexPath] = tracker
-        //cell.doneButton.tag = Int(tracker.id)
+        trackerIds.append(tracker.id)
+        cell.doneButton.tag = trackerIds.endIndex - 1
         cell.doneButton.addTarget(self, action: #selector(checkDone), for: .touchUpInside)
         return cell
     }
@@ -348,11 +346,11 @@ extension TrackerListViewController: UISearchResultsUpdating {
               searchText.count > 0,
               searchController.isActive
         else {
-            trackerData?.searchQuery = ""
+            categoryData?.searchQuery = ""
             updateTrackers()
             return
         }
-        trackerData?.searchQuery = searchText
+        categoryData?.searchQuery = searchText
         updateTrackers()
     }
 }
