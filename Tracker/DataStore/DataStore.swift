@@ -21,7 +21,7 @@ final class DataStoreHelper {
 final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
     let context: NSManagedObjectContext
     var dateFromDatePicker: Date?
-    weak var categoriesDelegate: DataStoreDelegate?
+    var categoriesDelegate: DataStoreDelegate?
     weak var trackersDelegate: DataStoreDelegate?
     weak var trackerRecordDelegate: DataStoreDelegate?
     

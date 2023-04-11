@@ -332,10 +332,36 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
         switch indexPath.row {
         case 0:
             let categoriesVC = CategoriesViewCotroller(store: store)
-            categoriesVC.categoryCompletion = { [weak self] in
+            let categoryStore = CategoryStore(dataStore: store)
+            let categoriesViewModel = CategoriesViewModel(model: categoryStore /*CategoriesModel(store: store)*/, selectedCategory: selectedCategory)
+            //categoryStore.delegate = categoriesViewModel
+            categoriesViewModel.categorySelectCompletion = { [weak self] selectedCategory in
+                self?.setCategory(category: selectedCategory)
+                self?.dismiss(animated: true)
+            }
+            
+            
+            categoriesVC.initialize(viewModel: categoriesViewModel)
+            
+            /*
+            categoriesVC.initialize(
+                viewModel: CategoriesViewModel(
+                    model: CategoriesModel(store: store)
+                )
+            )
+            */
+            
+            categoriesVC.categoryUpdateCompletion = { [weak self] in
                 self?.updateSelectedCategoryName()
             }
-            categoriesVC.parentVC = self
+            /*
+            categoriesVC.categorySelectCompletion = { [weak self] selectedCategory in
+                //guard let selectedCategory = self?.categoryData?.getCategory(indexPath) else { return }
+                self?.setCategory(category: selectedCategory)
+                self?.dismiss(animated: true)
+            }
+             */
+            //categoriesVC.parentVC = self
             present(categoriesVC, animated: true)
         default:
             let scheduleVC = ScheduleViewCotroller()

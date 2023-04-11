@@ -33,7 +33,7 @@ final class TrackerRecordStore: DataStoreDelegate {
                 result.append(TrackerRecord(trackerId: forTracker, doneAt: $0.doneAt ?? Date()))
             }
         }
-        print(result)
+        
         return result
     }
     

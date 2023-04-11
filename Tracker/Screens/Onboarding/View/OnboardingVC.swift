@@ -20,9 +20,10 @@ final class OnboardingViewController: UIPageViewController {
         dataSource = self
         delegate = self
         
-        //print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first)
-        
         orderedViewControllers = [onboarding_01, onboarding_02]
+        
+        onboarding_01.initialize(viewModel: OnboardingViewModel(for: OnboardingModel()))
+        onboarding_02.initialize(viewModel: OnboardingViewModel(for: OnboardingModel()))
         
         if let firstVC = orderedViewControllers.first {
             setViewControllers([firstVC], direction: .forward, animated: true)
@@ -44,7 +45,6 @@ final class OnboardingViewController: UIPageViewController {
 
 extension OnboardingViewController: UIPageViewControllerDelegate {
     func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
-        print("didFinishAnimating called")
         
         if let firstVC = viewControllers?.first,
            let index = orderedViewControllers.firstIndex(of: firstVC) {
@@ -82,71 +82,5 @@ extension OnboardingViewController: UIPageViewControllerDataSource {
         
         return orderedViewControllers[nextIndex]
         
-    }
-}
-
-class OnboardingViewControllerPage: UIViewController {
-    
-    var backgroundImage: String
-    var pageText: String
-    var buttonText: String
-    
-    init(backgroundImage: String, pageText: String, buttonText: String) {
-        self.backgroundImage = backgroundImage
-        self.pageText = pageText
-        self.buttonText = buttonText
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setup()
-    }
-    
-    @objc private func showHomeScreen() {
-        let homeVC = TabBarViewController()
-        homeVC.modalPresentationStyle = .fullScreen
-        homeVC.modalTransitionStyle = .coverVertical
-        present(homeVC, animated: true)
-    }
-    
-    func setup() {
-        let bgImage = UIImageView(image: UIImage(named: backgroundImage))
-        let label = UILabel()
-        let button = YPButton(text: "Вот это технологии!", destructive: false)
-        
-        button.addTarget(self, action: #selector(showHomeScreen), for: .touchUpInside)
-        
-        label.text = pageText
-        label.font = UIFont(name: "YSDisplay-Bold", size: 32)
-        label.textColor = UIColor(named: "YPBlack")
-        label.numberOfLines = 2
-        label.textAlignment = .center
-        bgImage.translatesAutoresizingMaskIntoConstraints = false
-        label.translatesAutoresizingMaskIntoConstraints = false
-        button.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .white
-        view.addSubview(bgImage)
-        view.addSubview(label)
-        view.addSubview(button)
-        
-        NSLayoutConstraint.activate([
-            bgImage.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            bgImage.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            bgImage.topAnchor.constraint(equalTo: view.topAnchor),
-            bgImage.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            label.heightAnchor.constraint(equalToConstant: 76),
-            label.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            label.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            label.topAnchor.constraint(equalTo: view.centerYAnchor, constant: 26),
-            button.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            button.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            button.heightAnchor.constraint(equalToConstant: 60),
-            button.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50)
-        ])
     }
 }

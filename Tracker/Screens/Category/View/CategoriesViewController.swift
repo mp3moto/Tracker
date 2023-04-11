@@ -1,13 +1,13 @@
 import UIKit
 
 final class CategoriesViewCotroller: UIViewController {
-    private let store: DataStore
-    private let data: CategoryStore?
+    var store: DataStore
     private let categoriesTableView = UITableView()
     private var lastCategoriesCount: Int = 0
-    private var categoriesTableViewIds: [TrackerCategoryCoreData] = []
-    weak var parentVC: NewTrackerViewController?
-    var categoryCompletion: (() -> Void)?
+    private var selectedCategory: TrackerCategoryCoreData?
+    var categoryUpdateCompletion: (() -> Void)?
+    
+    private var viewModel: CategoriesViewModel?
     
     private let noCategoriesView: UIView = {
         let noTrackersIndicatorView = UIView()
@@ -47,7 +47,6 @@ final class CategoriesViewCotroller: UIViewController {
     
     init(store: DataStore) {
         self.store = store
-        data = CategoryStore(dataStore: store)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -55,9 +54,17 @@ final class CategoriesViewCotroller: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func initialize(viewModel: CategoriesViewModel) {
+        self.viewModel = viewModel
+        bind()
+    }
+    
     override func viewDidLoad() {
-        
         super.viewDidLoad()
+        setupUI()
+    }
+    
+    func setupUI() {
         view.backgroundColor = UIColor(named: "YPWhite")
         
         /* -------------------------- TITLE -------------------------- */
@@ -116,18 +123,37 @@ final class CategoriesViewCotroller: UIViewController {
             categoriesTableView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
         ])
         
-        placeholderIfNeeded()
-        
         /* --------------------------------------------------------------- */
-        data?.delegate = self
+        
+        //placeholderIfNeeded()
+    }
+    
+    private func bind() {
+        guard let viewModel = viewModel else { return }
+        viewModel.onCategoriesChange = { [weak self] in
+            print("onCategoriesChange closure called")
+            self?.categoriesTableView.reloadData()
+        }
     }
 
     private func updateCategories() {
-        categoriesTableViewIds = []
-        categoriesTableView.reloadData()
-        placeholderIfNeeded()
+        //viewModel?.updateCategories()
     }
     
+    func showPlaceholder() {
+        categoriesTableView.addSubview(noCategoriesView)
+        NSLayoutConstraint.activate([
+            noCategoriesView.centerXAnchor.constraint(equalTo: categoriesTableView.centerXAnchor),
+            noCategoriesView.centerYAnchor.constraint(equalTo: categoriesTableView.centerYAnchor)
+        ])
+    }
+    
+    func hidePlaceholder() {
+        if noCategoriesView.isDescendant(of: categoriesTableView) {
+            noCategoriesView.removeFromSuperview()
+        }
+    }
+    /*
     private func placeholderIfNeeded() {
         if data?.getCategories().count == 0 {
             categoriesTableView.addSubview(noCategoriesView)
@@ -141,63 +167,45 @@ final class CategoriesViewCotroller: UIViewController {
             }
         }
     }
-    
+    */
     @objc private func addCategory() {
-        let addCategoryVC = AddCategoryViewController(store: store)
+        guard let viewModel = viewModel else { return }
+        let addCategoryVC = AddCategoryViewController(data: viewModel.model/*store: store*/)
         addCategoryVC.completion = { [weak self] in
-            self?.updateCategories()
+            //self?.updateCategories()
+            self?.viewModel?.updateCategories()
             self?.dismiss(animated: true)
         }
         present(addCategoryVC, animated: true)
     }
 }
-
+/*
 extension CategoriesViewCotroller: DataStoreDelegate {
     func didUpdate() {
         categoriesTableViewIds = []
         categoriesTableView.reloadData()
-        placeholderIfNeeded()
+        //placeholderIfNeeded()
     }
 }
-
+*/
 extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let data = data else { return 0 }
-        return data.numberOfRowsInSectionForCategories(section)
+        //print(viewModel?.categoriesCount())
+        return viewModel?.categoriesCount() ?? 0
+        //return 2
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let record = data?.object(at: indexPath),
-              let cell = tableView.dequeueReusableCell(withIdentifier: CategoryListCell.reuseIdentifier, for: indexPath) as? CategoryListCell,
-              let data = data
+        guard let viewModel = viewModel,
+              let cell = tableView.dequeueReusableCell(withIdentifier: CategoryListCell.reuseIdentifier, for: indexPath) as? CategoryListCell
         else { return CategoryListCell() }
+        
+        let cellViewModel = viewModel.getCategoryCellViewModel(at: indexPath)
+        let categoriesCount = viewModel.categoriesCount()
+        
+        cell.configCell(number: indexPath.row + 1, of: categoriesCount)
+        cell.cellViewModel = cellViewModel
 
-        categoriesTableViewIds.append(record)
-        
-        cell.cellText = record.name
-        //cell.tag = record
-        if parentVC?.selectedCategory == record {
-            cell.checkmarkImage.isHidden = false
-        } else {
-            cell.checkmarkImage.isHidden = true
-        }
-        
-        cell.layer.maskedCorners = []
-        if indexPath.row == 0 {
-            cell.layer.cornerRadius = 16
-            cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        }
-        
-        if indexPath.row == data.count - 1 {
-            cell.layer.cornerRadius = 16
-            cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-            if indexPath.row == 0 {
-                cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-            }
-            cell.separatorInset = .init(top: 0, left: .infinity, bottom: 0, right: 0)
-        } else {
-            cell.separatorInset = .init(top: 0, left: 16, bottom: 0, right: 16)
-        }
         return cell
     }
     
@@ -205,25 +213,25 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
         return UIContextMenuConfiguration(actionProvider: { actions in
             return UIMenu(children: [
                 UIAction(title: "Редактировать") { [weak self] _ in
-                    guard let self = self else { return }
-                    let addCategoryVC = AddCategoryViewController(store: self.store)
+                    guard let self = self,
+                          let viewModel = self.viewModel
+                    else { return }
+                    let addCategoryVC = AddCategoryViewController(data: viewModel.model/*store: self.store*/)
                     addCategoryVC.renameCompletion = { [weak self] in
-                        self?.didUpdate()
-                        self?.categoryCompletion?()
+                        viewModel.updateCategories()
+                        self?.categoryUpdateCompletion?()
                     }
-                    addCategoryVC.categoryId = self.categoriesTableViewIds[indexPath.row]
-                    self.lastCategoriesCount = self.data?.count ?? 0
+                    addCategoryVC.categoryId = viewModel.getCategory(at: indexPath) //self.categoriesTableViewIds[indexPath.row]
+                    self.lastCategoriesCount = viewModel.categoriesCount() //self.data?.count ?? 0
                     self.present(addCategoryVC, animated: true)
                 },
                 
                 UIAction(title: "Удалить", attributes: .destructive) { [weak self] _ in
-                    guard let self = self else { return }
-                    do {
-                        try self.data?.deleteCategory(self.categoriesTableViewIds[indexPath.row])
-                        self.didUpdate()
-                    } catch let error {
-                        fatalError(error.localizedDescription)
-                    }
+                    guard let self = self,
+                          let viewModel = self.viewModel
+                    else { return }
+                    viewModel.deleteCategory(at: indexPath)
+                    //viewModel.updateCategories()
                 }
             ])
         })
@@ -234,10 +242,7 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //guard let categoryEntity = data?.getCategoryEntity(id: categoriesTableViewIds[indexPath.row]) else { return }
-        //let categoryEntity = categoriesTableViewIds[indexPath.row]
-        parentVC?.setCategory(category: categoriesTableViewIds[indexPath.row])
-        dismiss(animated: true)
+        viewModel?.categoryTap(indexPath)
     }
     
 }

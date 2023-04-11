@@ -346,11 +346,11 @@ extension TrackerListViewController: UISearchResultsUpdating {
               searchText.count > 0,
               searchController.isActive
         else {
-            categoryData?.searchQuery = ""
+            trackerData?.searchQuery = ""
             updateTrackers()
             return
         }
-        categoryData?.searchQuery = searchText
+        trackerData?.searchQuery = searchText
         updateTrackers()
     }
 }

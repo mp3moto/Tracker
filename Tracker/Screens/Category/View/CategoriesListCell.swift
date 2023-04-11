@@ -2,10 +2,18 @@ import UIKit
 
 final class CategoryListCell: UITableViewCell {
     static let reuseIdentifier = "CategoryListCell"
+    private var viewModel: CategoryViewModel?
     
     var cellText: String? {
         didSet {
             titleLabel.text = cellText
+        }
+    }
+    
+    var cellViewModel: CategoryViewModel? {
+        didSet {
+            cellText = cellViewModel?.name
+            checkmarkImage.isHidden = !(cellViewModel?.selected ?? false)
         }
     }
     
@@ -36,16 +44,34 @@ final class CategoryListCell: UITableViewCell {
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        
+        //configCell()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    func initiate(viewModel: CategoryViewModel) {
+        self.viewModel = viewModel
+        bind()
+    }
+    
+    private func bind() {
+        guard let viewModel = viewModel else { return }
+        viewModel.onChange = { [weak self] in
+            self?.cellText = viewModel.name
+        }
+    }
+    
+    func configCell(number num: Int, of total: Int) {
         backgroundColor = UIColor(named: "YPGray")
-        
+
         contentView.addSubview(containerView)
         containerView.addSubview(titleLabel)
-        
-        checkmarkImage.isHidden = true
+
+        //checkmarkImage.isHidden = true
         containerView.addSubview(checkmarkImage)
-        
-        
+
         NSLayoutConstraint.activate([
             containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
             containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
@@ -60,9 +86,25 @@ final class CategoryListCell: UITableViewCell {
             checkmarkImage.widthAnchor.constraint(equalToConstant: 24),
             checkmarkImage.heightAnchor.constraint(equalToConstant: 24)
         ])
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        
+        layer.maskedCorners = []
+        layer.cornerRadius = 0
+        separatorInset = .init(top: 0, left: .infinity, bottom: 0, right: 0)
+        if num == 1 || num == total {
+            layer.cornerRadius = 16
+            if num == 1 && total == 1 {
+                layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+                separatorInset = .init(top: 0, left: .infinity, bottom: 0, right: 0)
+            } else {
+                if num != total {
+                    separatorInset = .init(top: 0, left: 16, bottom: 0, right: 16)
+                    if num == 1 {
+                        layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+                    }
+                } else {
+                    layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+                }
+            }
+        }
     }
 }

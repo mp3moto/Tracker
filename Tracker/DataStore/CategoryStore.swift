@@ -6,11 +6,6 @@ final class CategoryStore: DataStoreDelegate {
     var dataStore: DataStore
     var count: Int = 0
     var searchQuery: String = ""
-    /*var dateFromDatePicker: Date? {
-        didSet {
-            dataStore.dateFromDatePicker = dateFromDatePicker
-        }
-    }*/
     
     init(dataStore: DataStore) {
         self.dataStore = dataStore
@@ -56,7 +51,7 @@ final class CategoryStore: DataStoreDelegate {
         }
     }
     */
-    
+    /*
     func getCategories() -> [Category] {
         let categories = dataStore.getRecords(className: .TrackerCategoryCoreData) as [TrackerCategoryCoreData]
         count = categories.count
@@ -66,9 +61,25 @@ final class CategoryStore: DataStoreDelegate {
         }
         return result
     }
+    */
+    
+    func getCategories() -> [TrackerCategoryCoreData] {
+        let categories = dataStore.getRecords(className: .TrackerCategoryCoreData) as [TrackerCategoryCoreData]
+        return categories
+    }
+    
     
     func getCategory(_ id: TrackerCategoryCoreData) -> Category? {
         return Category(/*id: id, */name: id.name ?? Const.noName)
+    }
+    
+    func getCategory(_ indexPath: IndexPath) -> TrackerCategoryCoreData? {
+        let categories = dataStore.getRecords(className: .TrackerCategoryCoreData)
+        if indexPath.row < categories.count {
+            return categories[indexPath.row] as? TrackerCategoryCoreData
+        } else {
+            return nil
+        }
     }
     
     func updateCategory(id: TrackerCategoryCoreData, name: String) throws {
@@ -107,6 +118,8 @@ final class CategoryStore: DataStoreDelegate {
     }
     
     func didUpdate() {
+        print("CategoryStore didUpdate")
+        print(delegate)
         delegate?.didUpdate()
     }
 }
