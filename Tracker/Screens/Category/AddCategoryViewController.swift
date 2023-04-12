@@ -1,13 +1,10 @@
 import UIKit
 
 final class AddCategoryViewController: UIViewController {
-    //private let store: DataStore
     private let data: CategoryStore
     var completion: (() -> Void)?
     var renameCompletion: (() -> Void)?
-    var categoryId: TrackerCategoryCoreData?
-    
-    //private let data: CategoryStore?
+    private var categoryId: TrackerCategoryCoreData?
     
     private let categoryName: UITextField = {
         let field = UITextField()
@@ -27,10 +24,9 @@ final class AddCategoryViewController: UIViewController {
     
     private let addCategoryButton = YPButton(text: "Добавить категорию", destructive: false)
     
-    init(data: CategoryStore/*store: DataStore*/) {
-        //self.store = store
-        //data = CategoryStore(dataStore: store)
+    init(data: CategoryStore, categoryId: TrackerCategoryCoreData? = nil) {
         self.data = data
+        self.categoryId = categoryId
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -93,7 +89,7 @@ final class AddCategoryViewController: UIViewController {
         /*--------------------------------------------------------------- */
         
         if let categoryId = categoryId {
-            if let category = data.getCategory(categoryId) {
+            if let category = data.getCategoryStruct(categoryId) {
                 titleLabel.text = "Редактирование категории"
                 addCategoryButton.setTitle("Готово", for: .normal)
                 categoryName.text = category.name
@@ -126,11 +122,9 @@ final class AddCategoryViewController: UIViewController {
     
     @objc private func updateCategory(sender: YPButton) {
         guard let categoryId = categoryId else { return }
-        //let data = CategoryStore(dataStore: store)
         do {
             try data.updateCategory(id: categoryId, name: categoryName.text ?? Const.noName)
             renameCompletion?()
-            dismiss(animated: true)
         } catch let error {
             fatalError(error.localizedDescription)
         }

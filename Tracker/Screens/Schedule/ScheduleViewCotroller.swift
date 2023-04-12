@@ -4,10 +4,20 @@ final class ScheduleViewCotroller: UIViewController {
     private let scheduleTableView = UITableView()
     private let daysOfWeek: [String] = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     private var days: [Bool] = [false, false, false, false, false, false, false]
-    weak var parentVC: NewTrackerViewController?
-    var schedule: Schedule?
+    //weak var parentVC: NewTrackerViewController?
+    private var schedule: Schedule?
+    var setSchedule: ((Schedule) -> Void)?
     
     private let addScheduleButton = YPButton(text: "Готово", destructive: false)
+    
+    init(schedule: Schedule? = nil) {
+        self.schedule = schedule
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -89,16 +99,14 @@ final class ScheduleViewCotroller: UIViewController {
     }
     
     @objc private func addSchedule() {
-        parentVC?.selectedSchedule = Schedule(
+        setSchedule?(Schedule(
             mon: days[0],
             tue: days[1],
             wed: days[2],
             thu: days[3],
             fri: days[4],
             sat: days[5],
-            sun: days[6]
-        )
-        dismiss(animated: true)
+            sun: days[6]))
     }
     
     @objc private func tumblerChanged(_ sender: UISwitch) {

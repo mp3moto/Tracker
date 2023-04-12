@@ -62,7 +62,8 @@ final class CreateNewTrackerViewController: UIViewController {
     }
     
     @objc private func addNewHabit() {
-        let newHabitVC = NewTrackerViewController(trackerType: "habit", store: store)
+        let trackerType = TrackerType.habit
+        let newHabitVC = NewTrackerViewController(trackerType: trackerType, store: store)
         newHabitVC.completionCancel = { [weak self] in
             self?.completionCancel?()
         }
@@ -73,7 +74,8 @@ final class CreateNewTrackerViewController: UIViewController {
     }
     
     @objc private func addNewEvent() {
-        let newEventVC = NewTrackerViewController(trackerType: "event", store: store)
+        let trackerType = TrackerType.habit
+        let newEventVC = NewTrackerViewController(trackerType: trackerType, store: store)
         newEventVC.completionCancel = { [weak self] in
             self?.completionCancel?()
         }

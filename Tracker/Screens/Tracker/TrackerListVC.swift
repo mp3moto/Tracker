@@ -19,7 +19,12 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     private var isFiltering: Bool {
         return searchController.isActive && !searchBarIsEmpty
     }
-    private let datePicker = UIDatePicker()
+    
+    private var datePicker: UIDatePicker = {
+        let datePicker = UIDatePicker()
+        datePicker.maximumDate = Date()
+        return datePicker
+    }()
     private var dateFromDatePicker: Date? {
         didSet {
             trackerData?.dateFromDatePicker = dateFromDatePicker
@@ -156,9 +161,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         
         return result
     }
-         
-    
-    
+
     private func placeholderIfNeeded() {
         if noTrackersView.isDescendant(of: collection) {
             noTrackersView.removeFromSuperview()
@@ -248,8 +251,8 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         }
         present(createNewTrackerVC, animated: true)
     }
-    
-    private func prepareDate(date: Date) -> Date? {
+    /*
+    private func prepareDate0(date: Date) -> Date? {
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let shortDate = dateFormatter.string(from: date)
@@ -261,7 +264,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
             return nil
         }
     }
-    
+    */
     @objc private func checkDone(sender: DoneButton) {
         guard let date = dateFromDatePicker else { return }
         do {
@@ -295,9 +298,7 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerListItem.reuseIdentifier, for: indexPath) as? TrackerListItem,
-              let tracker = categories?[indexPath.section].trackers[indexPath.row],
-              let dateFromDatePicker = dateFromDatePicker,
-              let done = trackerRecordData?.isTrackerDone(doneAt: dateFromDatePicker, trackerId: tracker.id)
+              let tracker = categories?[indexPath.section].trackers[indexPath.row]
         else {
             return UICollectionViewCell()
         }
@@ -309,7 +310,7 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
         cell.icon.text = tracker.emoji
         cell.title.text = tracker.title
         cell.doneLabel.text = "\(tracker.doneCount) дней"
-        cell.doneButton.stateEnabled = !done
+        cell.doneButton.stateEnabled = !tracker.done //done
         cell.doneButton.backgroundColor = UIColor(named: color)
         trackerIds.append(tracker.id)
         cell.doneButton.tag = trackerIds.endIndex - 1

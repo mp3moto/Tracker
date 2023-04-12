@@ -1,10 +1,8 @@
 import Foundation
 
 final class TrackerRecordStore: DataStoreDelegate {
-    
     weak var delegate: DataStoreDelegate?
-    var dataStore: DataStore
-    
+    private var dataStore: DataStore
     private let dateFormatter = DateFormatter()
     
     init(dataStore: DataStore) {
@@ -12,7 +10,7 @@ final class TrackerRecordStore: DataStoreDelegate {
         dataStore.trackerRecordDelegate = self
     }
     
-    func getTrackerRecordFor(trackerId: TrackerCoreData, doneAt: Date) -> TrackerRecordCoreData? {
+    private func getTrackerRecordFor(trackerId: TrackerCoreData, doneAt: Date) -> TrackerRecordCoreData? {
         let sql = "doneAt = %@"
         let doneAt = doneAt as NSDate
         guard let fetchedDoneData = dataStore.getRecords(className: .TrackerRecordCoreData, sql: sql, additionalParam: doneAt) as? [TrackerRecordCoreData],
@@ -46,7 +44,7 @@ final class TrackerRecordStore: DataStoreDelegate {
         }
     }
     
-    func addTrackerRecord(doneAt: Date, trackerId: TrackerCoreData) throws {
+    private func addTrackerRecord(doneAt: Date, trackerId: TrackerCoreData) throws {
         do {
             let newTrackerRecord = TrackerRecordCoreData(context: dataStore.context)
             newTrackerRecord.tracker = trackerId
@@ -57,7 +55,7 @@ final class TrackerRecordStore: DataStoreDelegate {
         }
     }
     
-    func deleteTrackerRecord(doneAt: Date, trackerId: TrackerCoreData) throws {
+    private func deleteTrackerRecord(doneAt: Date, trackerId: TrackerCoreData) throws {
         guard let trackerRecord = getTrackerRecordFor(trackerId: trackerId, doneAt: doneAt) else { return }
         do {
             try dataStore.deleteRecord(object: trackerRecord)

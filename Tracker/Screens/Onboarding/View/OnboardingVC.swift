@@ -1,10 +1,8 @@
 import UIKit
 
 final class OnboardingViewController: UIPageViewController {
-    
     private let onboarding_01 = OnboardingViewControllerPage(backgroundImage: "onboardingPage1", pageText: "Отслеживайте только то, что хотите", buttonText: "Вот это технологии!")
     private let onboarding_02 = OnboardingViewControllerPage(backgroundImage: "onboardingPage2", pageText: "Даже если это не литры воды и йога", buttonText: "Вот это технологии!")
-    
     private let pageControl = UIPageControl()
     private var orderedViewControllers: [UIViewController] = []
     
@@ -67,8 +65,8 @@ extension OnboardingViewController: UIPageViewControllerDataSource {
         guard let viewControllerIndex = orderedViewControllers.firstIndex(of: viewController) else { return nil }
         
         let prevIndex = viewControllerIndex - 1
-        guard !(prevIndex < 0) else { return nil }
         
+        guard !(prevIndex < 0) else { return nil }
         return orderedViewControllers[prevIndex]
     }
     
@@ -79,8 +77,6 @@ extension OnboardingViewController: UIPageViewControllerDataSource {
         let nextIndex = viewControllerIndex + 1
         
         guard nextIndex < orderedViewControllers.count else { return nil }
-        
         return orderedViewControllers[nextIndex]
-        
     }
 }

@@ -1,7 +1,7 @@
 import UIKit
 
 final class CategoriesViewCotroller: UIViewController {
-    var store: DataStore
+    private var store: DataStore
     private let categoriesTableView = UITableView()
     private var lastCategoriesCount: Int = 0
     private var selectedCategory: TrackerCategoryCoreData?
@@ -64,7 +64,7 @@ final class CategoriesViewCotroller: UIViewController {
         setupUI()
     }
     
-    func setupUI() {
+    private func setupUI() {
         view.backgroundColor = UIColor(named: "YPWhite")
         
         /* -------------------------- TITLE -------------------------- */
@@ -125,19 +125,16 @@ final class CategoriesViewCotroller: UIViewController {
         
         /* --------------------------------------------------------------- */
         
-        //placeholderIfNeeded()
+        placeholderIfNeeded()
     }
     
     private func bind() {
         guard let viewModel = viewModel else { return }
         viewModel.onCategoriesChange = { [weak self] in
-            print("onCategoriesChange closure called")
-            self?.categoriesTableView.reloadData()
+            guard let self = self else { return }
+            self.categoriesTableView.reloadData()
+            self.placeholderIfNeeded()
         }
-    }
-
-    private func updateCategories() {
-        //viewModel?.updateCategories()
     }
     
     func showPlaceholder() {
@@ -153,46 +150,26 @@ final class CategoriesViewCotroller: UIViewController {
             noCategoriesView.removeFromSuperview()
         }
     }
-    /*
+    
     private func placeholderIfNeeded() {
-        if data?.getCategories().count == 0 {
-            categoriesTableView.addSubview(noCategoriesView)
-            NSLayoutConstraint.activate([
-                noCategoriesView.centerXAnchor.constraint(equalTo: categoriesTableView.centerXAnchor),
-                noCategoriesView.centerYAnchor.constraint(equalTo: categoriesTableView.centerYAnchor)
-            ])
-        } else {
-            if noCategoriesView.isDescendant(of: categoriesTableView) {
-                noCategoriesView.removeFromSuperview()
-            }
-        }
+        guard let viewModel = viewModel else { return }
+        viewModel.categoriesCount() > 0 ? hidePlaceholder() : showPlaceholder()
     }
-    */
+    
     @objc private func addCategory() {
         guard let viewModel = viewModel else { return }
-        let addCategoryVC = AddCategoryViewController(data: viewModel.model/*store: store*/)
+        let addCategoryVC = AddCategoryViewController(data: viewModel.model, categoryId: selectedCategory)
         addCategoryVC.completion = { [weak self] in
-            //self?.updateCategories()
             self?.viewModel?.updateCategories()
             self?.dismiss(animated: true)
         }
         present(addCategoryVC, animated: true)
     }
 }
-/*
-extension CategoriesViewCotroller: DataStoreDelegate {
-    func didUpdate() {
-        categoriesTableViewIds = []
-        categoriesTableView.reloadData()
-        //placeholderIfNeeded()
-    }
-}
-*/
+
 extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        //print(viewModel?.categoriesCount())
         return viewModel?.categoriesCount() ?? 0
-        //return 2
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -216,13 +193,14 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
                     guard let self = self,
                           let viewModel = self.viewModel
                     else { return }
-                    let addCategoryVC = AddCategoryViewController(data: viewModel.model/*store: self.store*/)
+                    let addCategoryVC = AddCategoryViewController(data: viewModel.model, categoryId: viewModel.getCategory(at: indexPath))
                     addCategoryVC.renameCompletion = { [weak self] in
                         viewModel.updateCategories()
                         self?.categoryUpdateCompletion?()
+                        self?.dismiss(animated: true)
                     }
-                    addCategoryVC.categoryId = viewModel.getCategory(at: indexPath) //self.categoriesTableViewIds[indexPath.row]
-                    self.lastCategoriesCount = viewModel.categoriesCount() //self.data?.count ?? 0
+                    //addCategoryVC.categoryId = viewModel.getCategory(at: indexPath)
+                    self.lastCategoriesCount = viewModel.categoriesCount()
                     self.present(addCategoryVC, animated: true)
                 },
                 
@@ -231,7 +209,6 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
                           let viewModel = self.viewModel
                     else { return }
                     viewModel.deleteCategory(at: indexPath)
-                    //viewModel.updateCategories()
                 }
             ])
         })

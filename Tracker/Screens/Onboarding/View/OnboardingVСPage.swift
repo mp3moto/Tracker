@@ -1,11 +1,9 @@
 import UIKit
 
 final class OnboardingViewControllerPage: UIViewController {
-    
-    var backgroundImage: String
-    var pageText: String
-    var buttonText: String
-    
+    private var backgroundImage: String
+    private var pageText: String
+    private var buttonText: String
     private var viewModel: OnboardingViewModel?
     
     init(backgroundImage: String, pageText: String, buttonText: String) {
@@ -20,7 +18,7 @@ final class OnboardingViewControllerPage: UIViewController {
         bind()
     }
     
-    func bind() {
+    private func bind() {
         guard let viewModel = viewModel else { return }
         
         viewModel.onButtonTap = { returnedValue in
@@ -44,7 +42,7 @@ final class OnboardingViewControllerPage: UIViewController {
         viewModel?.buttonTapped()
     }
     
-    func setup() {
+    private func setup() {
         let bgImage = UIImageView(image: UIImage(named: backgroundImage))
         let label = UILabel()
         let button = YPButton(text: "Вот это технологии!", destructive: false)

@@ -22,7 +22,7 @@ final class TrackerListItem: UICollectionViewCell {
         paragraphStyle.minimumLineHeight = CGFloat(16)
         paragraphStyle.maximumLineHeight = CGFloat(16)
         label.attributedText = NSAttributedString(
-            string: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            string: "",
             attributes: [
                 .paragraphStyle : paragraphStyle
             ]

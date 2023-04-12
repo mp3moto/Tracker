@@ -21,7 +21,6 @@
 		9475B4E929E0652700DD490D /* OnboardingModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9475B4E829E0652700DD490D /* OnboardingModel.swift */; };
 		9475B4EB29E0654900DD490D /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9475B4EA29E0654900DD490D /* OnboardingViewModel.swift */; };
 		9475B4ED29E145CC00DD490D /* OnboardingVСPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9475B4EC29E145CC00DD490D /* OnboardingVСPage.swift */; };
-		9475B4F229E14DF000DD490D /* CategoriesModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9475B4F129E14DF000DD490D /* CategoriesModel.swift */; };
 		9475B4F429E14E1700DD490D /* CategoriesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9475B4F329E14E1700DD490D /* CategoriesViewModel.swift */; };
 		9475B4F629E199D900DD490D /* CategoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9475B4F529E199D900DD490D /* CategoryViewModel.swift */; };
 		948E12BE29975677002BD4D8 /* EmojiCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 948E12BD29975677002BD4D8 /* EmojiCell.swift */; };
@@ -65,7 +64,6 @@
 		9475B4E829E0652700DD490D /* OnboardingModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingModel.swift; sourceTree = "<group>"; };
 		9475B4EA29E0654900DD490D /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
 		9475B4EC29E145CC00DD490D /* OnboardingVСPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingVСPage.swift"; sourceTree = "<group>"; };
-		9475B4F129E14DF000DD490D /* CategoriesModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesModel.swift; sourceTree = "<group>"; };
 		9475B4F329E14E1700DD490D /* CategoriesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesViewModel.swift; sourceTree = "<group>"; };
 		9475B4F529E199D900DD490D /* CategoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryViewModel.swift; sourceTree = "<group>"; };
 		948E12BD29975677002BD4D8 /* EmojiCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiCell.swift; sourceTree = "<group>"; };
@@ -153,14 +151,6 @@
 			path = Onboarding;
 			sourceTree = "<group>";
 		};
-		9475B4EE29E14CE000DD490D /* Model */ = {
-			isa = PBXGroup;
-			children = (
-				9475B4F129E14DF000DD490D /* CategoriesModel.swift */,
-			);
-			path = Model;
-			sourceTree = "<group>";
-		};
 		9475B4EF29E14CEC00DD490D /* ViewModel */ = {
 			isa = PBXGroup;
 			children = (
@@ -184,7 +174,6 @@
 			children = (
 				9475B4F029E14CF600DD490D /* View */,
 				9475B4EF29E14CEC00DD490D /* ViewModel */,
-				9475B4EE29E14CE000DD490D /* Model */,
 				948E12CA2999E972002BD4D8 /* AddCategoryViewController.swift */,
 			);
 			path = Category;
@@ -405,7 +394,6 @@
 				946AEF30299CE32C0088572A /* Tracker.swift in Sources */,
 				94BD1409299B35A20003560C /* ScheduleListCell.swift in Sources */,
 				94BD1407299B33240003560C /* ScheduleViewCotroller.swift in Sources */,
-				9475B4F229E14DF000DD490D /* CategoriesModel.swift in Sources */,
 				9475B4F629E199D900DD490D /* CategoryViewModel.swift in Sources */,
 				946AEF33299D42060088572A /* TrackerListItem.swift in Sources */,
 				94A2D7902994D1A90051AD19 /* NewTrackerViewController.swift in Sources */,

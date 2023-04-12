@@ -39,12 +39,10 @@ final class CategoryListCell: UITableViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        separatorInset = .init(top: 0, left: 16, bottom: 0, right: 16)
     }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        //configCell()
     }
     
     required init?(coder: NSCoder) {
@@ -68,8 +66,6 @@ final class CategoryListCell: UITableViewCell {
 
         contentView.addSubview(containerView)
         containerView.addSubview(titleLabel)
-
-        //checkmarkImage.isHidden = true
         containerView.addSubview(checkmarkImage)
 
         NSLayoutConstraint.activate([
@@ -89,19 +85,19 @@ final class CategoryListCell: UITableViewCell {
         
         layer.maskedCorners = []
         layer.cornerRadius = 0
-        separatorInset = .init(top: 0, left: .infinity, bottom: 0, right: 0)
+        separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         if num == 1 || num == total {
             layer.cornerRadius = 16
             if num == 1 && total == 1 {
                 layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-                separatorInset = .init(top: 0, left: .infinity, bottom: 0, right: 0)
+                separatorInset = UIEdgeInsets(top: 0, left: bounds.size.width, bottom: 0, right: 0)
             } else {
                 if num != total {
-                    separatorInset = .init(top: 0, left: 16, bottom: 0, right: 16)
                     if num == 1 {
                         layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
                     }
                 } else {
+                    separatorInset = UIEdgeInsets(top: 0, left: bounds.size.width, bottom: 0, right: 0)
                     layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
                 }
             }

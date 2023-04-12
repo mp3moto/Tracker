@@ -21,18 +21,9 @@ final class DataStoreHelper {
 final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
     let context: NSManagedObjectContext
     var dateFromDatePicker: Date?
-    var categoriesDelegate: DataStoreDelegate?
+    weak var categoriesDelegate: DataStoreDelegate?
     weak var trackersDelegate: DataStoreDelegate?
     weak var trackerRecordDelegate: DataStoreDelegate?
-    
-    init(context: NSManagedObjectContext) {
-        self.context = context
-    }
-    
-    override convenience init() {
-        let helper = DataStoreHelper()
-        self.init(context: helper.persistentContainer.viewContext)
-    }
     
     private lazy var categoriesFRC: NSFetchedResultsController<TrackerCategoryCoreData> = {
         let fetchRequest = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
@@ -70,6 +61,15 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         }
     }
     
+    init(context: NSManagedObjectContext) {
+        self.context = context
+    }
+    
+    override convenience init() {
+        let helper = DataStoreHelper()
+        self.init(context: helper.persistentContainer.viewContext)
+    }
+    
     func saveRecord<E: NSManagedObject>(object: E) throws {
         try context.save()
     }
@@ -102,10 +102,6 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         }
     }
     
-    var numberOfSectionsForCategories: Int {
-        categoriesFRC.sections?.count ?? 0
-    }
-    
     func numberOfRowsInSectionForCategories(_ section: Int) -> Int {
         categoriesFRC.sections?[section].numberOfObjects ?? 0
     }
@@ -115,13 +111,18 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        if controller == trackersFRC {
+            trackersDelegate?.didUpdate()
+        }
+        /*
         switch controller {
         case categoriesFRC:
-            categoriesDelegate?.didUpdate()
+            try? categoriesFRC.performFetch()
         case trackersFRC:
             trackersDelegate?.didUpdate()
         default:
             break
         }
+         */
     }
 }

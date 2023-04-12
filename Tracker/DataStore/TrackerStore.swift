@@ -1,10 +1,9 @@
 import Foundation
 
 final class TrackerStore: DataStoreDelegate {
-    
     weak var delegate: DataStoreDelegate?
     var trackerRecordStore: TrackerRecordStore?
-    var dataStore: DataStore
+    private var dataStore: DataStore
     var dateFromDatePicker: Date? {
         didSet {
             dataStore.dateFromDatePicker = dateFromDatePicker
@@ -17,7 +16,7 @@ final class TrackerStore: DataStoreDelegate {
         dataStore.trackersDelegate = self
     }
     
-    func unpackSсhedule(_ packed: Int32) -> Schedule {
+    private func unpackSсhedule(_ packed: Int32) -> Schedule {
         Schedule(
             mon: packed & 64 == 64,
             tue: packed & 32 == 32,
@@ -29,7 +28,7 @@ final class TrackerStore: DataStoreDelegate {
         )
     }
 
-    func prepareSQLQueryString() -> String {
+    private func prepareSQLQueryString() -> String {
         let weekDayPacked = dateFromDatePicker?.getWeekDay() ?? 0
         let defaultResult = "(schedule = NULL) OR (schedule & \(weekDayPacked) != 0)"
         if searchQuery.count > 0 {
@@ -63,7 +62,8 @@ final class TrackerStore: DataStoreDelegate {
                         category: category,
                         schedule: schedule,
                         doneCount: records?.count ?? 0,
-                        done: false/*fetchedDoneData.filter { $0.doneAt == dateFromDatePicker && $0.tracker?.id == trackerId }.count > 0*/
+                        done: trackerRecordStore?.isTrackerDone(doneAt: date, trackerId: id) ?? false
+                        //done: false/*fetchedDoneData.filter { $0.doneAt == dateFromDatePicker && $0.tracker?.id == trackerId }.count > 0*/
                     )
                 )
             }

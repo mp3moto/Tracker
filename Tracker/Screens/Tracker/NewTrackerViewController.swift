@@ -58,14 +58,17 @@ class NewTrackerViewController: UIViewController {
     private let emoji: [String] = ["🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"]
     private let colors: [String] = ["Sunset Orange", "West Side", "Azure Radiance", "Electric Violet", "Emerald", "Orchid", "Azalea", "Dodger Blue", "Turquoise", "Minsk", "Persimmon", "Carnation Pink", "Manhattan", "Cornflower Blue", "Violet", "Medium Purple", "Purple", "Soft Emerald"]
     
-    init(trackerType: String, store: DataStore) {
-        self.trackerType = trackerType
+    init(trackerType: TrackerType, store: DataStore) {
+        self.trackerType = trackerType.rawValue
         self.store = store
-        if trackerType == Const.habit {
+        
+        switch trackerType {
+        case .habit:
             trackerParamsTableViewValues = ["Категория", "Расписание"]
-        } else {
+        case .event:
             trackerParamsTableViewValues = ["Категория"]
         }
+        
         trackerData = TrackerStore(dataStore: store)
         categoryData = CategoryStore(dataStore: store)
         super.init(nibName: nil, bundle: nil)
@@ -304,7 +307,6 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: TrackerListCell.reuseIdentifier, for: indexPath) as? TrackerListCell else { return TrackerListCell() }
         if indexPath.row == 0 {
-            //cell.cellValueText = categoryData?.getCategories().first(where: { $0.id == selectedCategory?.id })?.name
             cell.cellValueText = selectedCategory?.name
         } else {
             cell.cellValueText = selectedSchedule?.text()
@@ -333,40 +335,27 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
         case 0:
             let categoriesVC = CategoriesViewCotroller(store: store)
             let categoryStore = CategoryStore(dataStore: store)
-            let categoriesViewModel = CategoriesViewModel(model: categoryStore /*CategoriesModel(store: store)*/, selectedCategory: selectedCategory)
-            //categoryStore.delegate = categoriesViewModel
+            let categoriesViewModel = CategoriesViewModel(model: categoryStore, selectedCategory: selectedCategory)
+            
             categoriesViewModel.categorySelectCompletion = { [weak self] selectedCategory in
                 self?.setCategory(category: selectedCategory)
                 self?.dismiss(animated: true)
             }
             
-            
             categoriesVC.initialize(viewModel: categoriesViewModel)
-            
-            /*
-            categoriesVC.initialize(
-                viewModel: CategoriesViewModel(
-                    model: CategoriesModel(store: store)
-                )
-            )
-            */
             
             categoriesVC.categoryUpdateCompletion = { [weak self] in
                 self?.updateSelectedCategoryName()
             }
-            /*
-            categoriesVC.categorySelectCompletion = { [weak self] selectedCategory in
-                //guard let selectedCategory = self?.categoryData?.getCategory(indexPath) else { return }
-                self?.setCategory(category: selectedCategory)
-                self?.dismiss(animated: true)
-            }
-             */
-            //categoriesVC.parentVC = self
+
             present(categoriesVC, animated: true)
         default:
-            let scheduleVC = ScheduleViewCotroller()
-            scheduleVC.parentVC = self
-            scheduleVC.schedule = selectedSchedule
+            let scheduleVC = ScheduleViewCotroller(schedule: selectedSchedule)
+            scheduleVC.setSchedule = { [weak self] schedule in
+                self?.selectedSchedule = schedule
+                self?.dismiss(animated: true)
+            }
+            
             present(scheduleVC, animated: true)
         }
     }

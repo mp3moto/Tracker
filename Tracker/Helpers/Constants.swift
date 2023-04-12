@@ -7,6 +7,7 @@ struct Const {
     static let defaultColor = "Sunset Orange"
     static let trackerNameLengthLimit = 38
     static let habit = "habit"
+    static let event = "event"
 }
 
 enum CoreDataClasses: String {
@@ -14,3 +15,9 @@ enum CoreDataClasses: String {
     case TrackerCategoryCoreData
     case TrackerRecordCoreData
 }
+
+enum TrackerType: String {
+    case habit
+    case event
+}
+
