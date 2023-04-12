@@ -74,7 +74,7 @@ final class CreateNewTrackerViewController: UIViewController {
     }
     
     @objc private func addNewEvent() {
-        let trackerType = TrackerType.habit
+        let trackerType = TrackerType.event
         let newEventVC = NewTrackerViewController(trackerType: trackerType, store: store)
         newEventVC.completionCancel = { [weak self] in
             self?.completionCancel?()
