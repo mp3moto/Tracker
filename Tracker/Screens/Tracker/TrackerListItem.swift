@@ -40,7 +40,7 @@ final class TrackerListItem: UICollectionViewCell {
     
     let doneLabel: UILabel = {
         let label = UILabel()
-        label.text = "0 дней"
+        label.text = ""
         label.font = UIFont(name: "YSDisplay-Medium", size: 12)
         label.textColor = UIColor(named: "YPBlack")
         label.translatesAutoresizingMaskIntoConstraints = false

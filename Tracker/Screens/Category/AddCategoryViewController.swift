@@ -8,21 +8,29 @@ final class AddCategoryViewController: UIViewController {
     
     private let categoryName: UITextField = {
         let field = UITextField()
-        field.placeholder = "Введите название категории"
+        field.attributedPlaceholder = NSAttributedString(string: LocalizedString.enterCategoryName, attributes: [NSAttributedString.Key.foregroundColor: UIColor(named: "YPTextFieldPlaceholder") ?? .gray])
         field.font = UIFont(name: "YSDisplay-Medium", size: 17)
         field.layer.cornerRadius = 16
-        field.backgroundColor = UIColor(named: "YPGray")
+        field.backgroundColor = UIColor(named: "YPTextFieldBackground")
         field.clearButtonMode = .always
-        
-        
-        let paddingView: UIView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 1))
-        field.leftView = paddingView
         field.leftViewMode = .always
+        
+        field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 1))
+        
+        switch UIView.userInterfaceLayoutDirection(for: field.semanticContentAttribute) {
+        case .leftToRight:
+            field.textAlignment = .left
+        case .rightToLeft:
+            field.textAlignment = .right
+        @unknown default:
+            break
+        }
+        
         field.translatesAutoresizingMaskIntoConstraints = false
         return field
     }()
     
-    private let addCategoryButton = YPButton(text: "Добавить категорию", destructive: false)
+    private let addCategoryButton = YPButton(text: LocalizedString.done, destructive: false)
     
     init(data: CategoryStore, categoryId: TrackerCategoryCoreData? = nil) {
         self.data = data
@@ -35,7 +43,7 @@ final class AddCategoryViewController: UIViewController {
     }
     
     override func viewDidLoad() {
-        view.backgroundColor = UIColor(named: "YPWhite")
+        view.backgroundColor = .systemBackground
         
         /* -------------------- TITLE -------------------------- */
         let titleView = UIView(frame: .zero)
@@ -50,7 +58,7 @@ final class AddCategoryViewController: UIViewController {
         
         let titleLabel: UILabel = {
             let label = UILabel()
-            label.text = "Новая категория"
+            label.text = LocalizedString.newCategory
             label.font = UIFont(name: "YSDisplay-Medium", size: 16)
             label.textColor = UIColor(named: "YPBlack")
             label.translatesAutoresizingMaskIntoConstraints = false
@@ -90,8 +98,8 @@ final class AddCategoryViewController: UIViewController {
         
         if let categoryId = categoryId {
             if let category = data.getCategoryStruct(categoryId) {
-                titleLabel.text = "Редактирование категории"
-                addCategoryButton.setTitle("Готово", for: .normal)
+                titleLabel.text = LocalizedString.editCategory
+                addCategoryButton.setTitle(LocalizedString.done, for: .normal)
                 categoryName.text = category.name
                 addCategoryButton.removeTarget(self, action: #selector(addCategory), for: .touchUpInside)
                 addCategoryButton.addTarget(self, action: #selector(updateCategory), for: .touchUpInside)

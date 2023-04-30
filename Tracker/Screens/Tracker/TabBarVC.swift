@@ -5,8 +5,8 @@ final class TabBarViewController: UITabBarController {
     private let statisticsVC = UINavigationController(rootViewController: StatisticsViewController())
     
     override func viewDidLoad() {
-        trackerListVC.tabBarItem = UITabBarItem(title: "Трекеры", image: UIImage(named: "iconTrackers"), tag: 0)
-        statisticsVC.tabBarItem = UITabBarItem(title: "Статистика", image: UIImage(named: "iconStatistics"), tag: 1)
+        trackerListVC.tabBarItem = UITabBarItem(title: LocalizedString.trackers, image: UIImage(named: "iconTrackers"), tag: 0)
+        statisticsVC.tabBarItem = UITabBarItem(title: LocalizedString.statistics, image: UIImage(named: "iconStatistics"), tag: 1)
         viewControllers = [trackerListVC, statisticsVC]
     }
 }

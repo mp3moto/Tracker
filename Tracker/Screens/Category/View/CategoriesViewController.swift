@@ -13,7 +13,7 @@ final class CategoriesViewCotroller: UIViewController {
         let noTrackersIndicatorView = UIView()
         let noTrackersIndicatorImage = UIImageView(image: UIImage(named: "no trackers"))
         let noTrackersIndicatorLabel = UILabel()
-        noTrackersIndicatorLabel.text = "Привычки и события можно\nобъединить по смыслу"
+        noTrackersIndicatorLabel.text = LocalizedString.categoriesPlaceholder
         noTrackersIndicatorLabel.font = UIFont(name: "YSDisplay-Medium", size: 12)
         noTrackersIndicatorLabel.numberOfLines = 2
         noTrackersIndicatorLabel.textAlignment = .center
@@ -65,7 +65,7 @@ final class CategoriesViewCotroller: UIViewController {
     }
     
     private func setupUI() {
-        view.backgroundColor = UIColor(named: "YPWhite")
+        view.backgroundColor = UIColor.systemBackground
         
         /* -------------------------- TITLE -------------------------- */
         let titleView = UIView(frame: .zero)
@@ -80,7 +80,7 @@ final class CategoriesViewCotroller: UIViewController {
         
         let titleLabel: UILabel = {
             let label = UILabel()
-            label.text = "Категория"
+            label.text = LocalizedString.category
             label.font = UIFont(name: "YSDisplay-Medium", size: 16)
             label.textColor = UIColor(named: "YPBlack")
             label.translatesAutoresizingMaskIntoConstraints = false
@@ -94,7 +94,7 @@ final class CategoriesViewCotroller: UIViewController {
         /*----------------------------------------------------------------*/
         
         /* ---------------------------- Button -------------------------- */
-        let addCategoryButton = YPButton(text: "Добавить категорию", destructive: false)
+        let addCategoryButton = YPButton(text: LocalizedString.addCategory, destructive: false)
         addCategoryButton.addTarget(self, action: #selector(addCategory), for: .touchUpInside)
         view.addSubview(addCategoryButton)
         NSLayoutConstraint.activate([
@@ -189,7 +189,7 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(actionProvider: { actions in
             return UIMenu(children: [
-                UIAction(title: "Редактировать") { [weak self] _ in
+                UIAction(title: LocalizedString.edit) { [weak self] _ in
                     guard let self = self,
                           let viewModel = self.viewModel
                     else { return }
@@ -204,7 +204,7 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
                     self.present(addCategoryVC, animated: true)
                 },
                 
-                UIAction(title: "Удалить", attributes: .destructive) { [weak self] _ in
+                UIAction(title: LocalizedString.delete, attributes: .destructive) { [weak self] _ in
                     guard let self = self,
                           let viewModel = self.viewModel
                     else { return }

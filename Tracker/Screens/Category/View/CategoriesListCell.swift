@@ -62,7 +62,7 @@ final class CategoryListCell: UITableViewCell {
     }
     
     func configCell(number num: Int, of total: Int) {
-        backgroundColor = UIColor(named: "YPGray")
+        backgroundColor = UIColor(named: "YPTextFieldBackground")
 
         contentView.addSubview(containerView)
         containerView.addSubview(titleLabel)

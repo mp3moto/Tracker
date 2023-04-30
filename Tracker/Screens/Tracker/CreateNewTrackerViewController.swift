@@ -16,10 +16,10 @@ final class CreateNewTrackerViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(named: "YPWhite")
+        view.backgroundColor = .systemBackground//UIColor(named: "YPWhite")
         
         let titleView = UILabel()
-        titleView.text = "Создание трекера"
+        titleView.text = LocalizedString.newTracker
         titleView.font = UIFont(name: "YSDisplay-Medium", size: 16)
         titleView.textColor = UIColor(named: "YPBlack")
         
@@ -35,8 +35,8 @@ final class CreateNewTrackerViewController: UIViewController {
         let menuView = UIView(frame: .zero)
         menuView.translatesAutoresizingMaskIntoConstraints = false
         
-        let newHabitButton = YPButton(text: "Привычка", destructive: false)
-        let newEventButton = YPButton(text: "Нерегулярное событие", destructive: false)
+        let newHabitButton = YPButton(text: LocalizedString.habit, destructive: false)
+        let newEventButton = YPButton(text: LocalizedString.event, destructive: false)
         
         newHabitButton.addTarget(self, action: #selector(addNewHabit), for: .touchUpInside)
         newEventButton.addTarget(self, action: #selector(addNewEvent), for: .touchUpInside)

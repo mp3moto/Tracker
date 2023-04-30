@@ -35,7 +35,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         let noTrackersIndicatorView = UIView()
         let noTrackersIndicatorImage = UIImageView(image: UIImage(named: "no trackers"))
         let noTrackersIndicatorLabel = UILabel()
-        noTrackersIndicatorLabel.text = "Что будем отслеживать?"
+        noTrackersIndicatorLabel.text = LocalizedString.whatWillWeTrack
         noTrackersIndicatorLabel.font = UIFont(name: "YSDisplay-Medium", size: 12)
         
         noTrackersIndicatorView.translatesAutoresizingMaskIntoConstraints = false
@@ -68,7 +68,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         let noTrackersIndicatorView = UIView()
         let noTrackersIndicatorImage = UIImageView(image: UIImage(named: "no trackers found"))
         let noTrackersIndicatorLabel = UILabel()
-        noTrackersIndicatorLabel.text = "Ничего не найдено"
+        noTrackersIndicatorLabel.text = LocalizedString.nothingFound
         noTrackersIndicatorLabel.font = UIFont(name: "YSDisplay-Medium", size: 12)
         
         noTrackersIndicatorView.translatesAutoresizingMaskIntoConstraints = false
@@ -113,7 +113,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = UIColor(named: "YPWhite")
+        view.backgroundColor = .systemBackground
         configureNavigationBar()
         dateFromDatePicker = datePicker.date.prepareDate()
         guard let date = dateFromDatePicker else { return }
@@ -202,7 +202,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         
         addTrackerButton.translatesAutoresizingMaskIntoConstraints = false
         
-        title = "Трекеры"
+        title = LocalizedString.trackers
         navigationController?.navigationBar.prefersLargeTitles = true
         let appearance = UINavigationBarAppearance()
         appearance.largeTitleTextAttributes = [.font: UIFont(name: "YSDisplay-Bold", size: 34) ?? "System"]
@@ -223,7 +223,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false
-        searchController.searchBar.placeholder = "Поиск"
+        searchController.searchBar.placeholder = LocalizedString.search
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         definesPresentationContext = true
@@ -251,20 +251,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         }
         present(createNewTrackerVC, animated: true)
     }
-    /*
-    private func prepareDate0(date: Date) -> Date? {
-        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let shortDate = dateFormatter.string(from: date)
-        let longDate = "\(shortDate)T00:00:00+0000"
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-        if let result = dateFormatter.date(from: longDate) {
-            return result
-        } else {
-            return nil
-        }
-    }
-    */
+    
     @objc private func checkDone(sender: DoneButton) {
         guard let date = dateFromDatePicker else { return }
         do {
@@ -309,7 +296,7 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
         cell.itemBackground.backgroundColor = UIColor(named: color)
         cell.icon.text = tracker.emoji
         cell.title.text = tracker.title
-        cell.doneLabel.text = "\(tracker.doneCount) дней"
+        cell.doneLabel.text = String.localizedStringWithFormat(NSLocalizedString("daysDone", comment: ""), tracker.doneCount)  //"\(tracker.doneCount) дней"
         cell.doneButton.stateEnabled = !tracker.done //done
         cell.doneButton.backgroundColor = UIColor(named: color)
         trackerIds.append(tracker.id)
@@ -359,6 +346,6 @@ extension TrackerListViewController: UISearchResultsUpdating {
 final class StatisticsViewController: UIViewController {
     override func viewDidLoad() {
         view.backgroundColor = UIColor(named: "YPWhite")
-        title = "Статистика"
+        title = LocalizedString.statistics
     }
 }
