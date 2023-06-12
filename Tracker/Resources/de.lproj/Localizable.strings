@@ -35,3 +35,5 @@
 "habit" = "Gewohnheit";
 "event" = "Unregelmäßiges Ereignis";
 "newTracker" = "Neuer Tracker";
+"pin" = "Pin";
+"unpin" = "Unpin";

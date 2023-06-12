@@ -33,3 +33,5 @@
 "habit" = "Habit";
 "event" = "Irregular event";
 "newTracker" = "New tracker";
+"pin" = "Pin";
+"unpin" = "Unpin";

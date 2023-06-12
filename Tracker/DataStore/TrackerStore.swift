@@ -62,8 +62,8 @@ final class TrackerStore: DataStoreDelegate {
                         category: category,
                         schedule: schedule,
                         doneCount: records?.count ?? 0,
-                        done: trackerRecordStore?.isTrackerDone(doneAt: date, trackerId: id) ?? false
-                        //done: false/*fetchedDoneData.filter { $0.doneAt == dateFromDatePicker && $0.tracker?.id == trackerId }.count > 0*/
+                        done: trackerRecordStore?.isTrackerDone(doneAt: date, trackerId: id) ?? false,
+                        pinned: $0.pinned
                     )
                 )
             }
@@ -78,6 +78,7 @@ final class TrackerStore: DataStoreDelegate {
             newTracker.title = title
             newTracker.emoji = emoji
             newTracker.color = color
+            newTracker.pinned = false
             if let schedule = schedule {
                 newTracker.schedule = (schedule.packed()) as NSNumber
             } else {
@@ -87,6 +88,14 @@ final class TrackerStore: DataStoreDelegate {
             try dataStore.saveRecord(object: newTracker)
         } catch let error {
             fatalError(error.localizedDescription)
+        }
+    }
+    
+    func togglePinned(trackerId: TrackerCoreData) throws {
+        do {
+            let pinned = trackerId.pinned
+            trackerId.pinned = !pinned
+            try dataStore.saveRecord(object: trackerId)
         }
     }
     

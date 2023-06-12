@@ -116,19 +116,25 @@ final class ScheduleViewCotroller: UIViewController {
 
 extension ScheduleViewCotroller: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 7
+        return 15
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: ScheduleListCell.reuseIdentifier, for: indexPath) as? ScheduleListCell else { return ScheduleListCell() }
-        cell.cellText = daysOfWeek[indexPath.row]
+        var indexPathRow = 0
+        if indexPath.row > 6 {
+            indexPathRow = 6
+        } else {
+            indexPathRow = indexPath.row
+        }
+        cell.cellText = daysOfWeek[indexPathRow]
         cell.layer.maskedCorners = []
-        if indexPath.row == 0 {
+        if indexPathRow == 0 {
             cell.layer.cornerRadius = 16
             cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         }
         
-        if indexPath.row == daysOfWeek.count - 1 {
+        if indexPathRow == daysOfWeek.count - 1 {
             cell.layer.cornerRadius = 16
             cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
             cell.separatorInset = UIEdgeInsets(top: 0, left: cell.bounds.size.width, bottom: 0, right: 0)
@@ -136,8 +142,8 @@ extension ScheduleViewCotroller: UITableViewDataSource, UITableViewDelegate {
             cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         }
         
-        cell.tumbler.tag = indexPath.row
-        cell.tumbler.isOn = days[indexPath.row]
+        cell.tumbler.tag = indexPathRow
+        cell.tumbler.isOn = days[indexPathRow]
         cell.tumbler.addTarget(self, action: #selector(tumblerChanged), for: .valueChanged)
         return cell
     }

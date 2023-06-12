@@ -33,3 +33,5 @@
 "habit" = "العادة";
 "event" = "حدث غير منتظم";
 "newTracker" = "تعقب جديد";
+"pin" = "Pin";
+"unpin" = "Unpin";

@@ -3,6 +3,7 @@ import UIKit
 class NewTrackerViewController: UIViewController {
     private let trackerType: String
     private let store: DataStore
+    private var editTracker: TrackerCoreData?
     var completionCancel: (() -> Void)?
     var completionCreate: (() -> Void)?
     var selectedCategory: TrackerCategoryCoreData?
@@ -68,9 +69,10 @@ class NewTrackerViewController: UIViewController {
     private let emoji: [String] = ["🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"]
     private let colors: [String] = ["Sunset Orange", "West Side", "Azure Radiance", "Electric Violet", "Emerald", "Orchid", "Azalea", "Dodger Blue", "Turquoise", "Minsk", "Persimmon", "Carnation Pink", "Manhattan", "Cornflower Blue", "Violet", "Medium Purple", "Purple", "Soft Emerald"]
     
-    init(trackerType: TrackerType, store: DataStore) {
+    init(trackerType: TrackerType, store: DataStore, editTracker: TrackerCoreData? = nil) {
         self.trackerType = trackerType.rawValue
         self.store = store
+        self.editTracker = editTracker
         
         switch trackerType {
         case .habit:
@@ -90,7 +92,7 @@ class NewTrackerViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground//UIColor(named: "YPWhite")
+        view.backgroundColor = .systemBackground
         
         /* -------------------- TITLE -------------------------- */
         let titleView = UIView(frame: .zero)
@@ -146,6 +148,7 @@ class NewTrackerViewController: UIViewController {
         /*----------------------------------------------------------------*/
         
         /*---------------------------TrackerName--------------------------*/
+        trackerName.text = editTracker?.title
         trackerName.addTarget(self, action: #selector(checkState), for: .allEditingEvents)
         pageContentView.addSubview(trackerName)
         
@@ -178,7 +181,6 @@ class NewTrackerViewController: UIViewController {
         NSLayoutConstraint.activate([
             trackerParamsTableView.leadingAnchor.constraint(equalTo: pageContentView.leadingAnchor),
             trackerParamsTableView.trailingAnchor.constraint(equalTo: pageContentView.trailingAnchor),
-            //trackerParamsTableView.widthAnchor.constraint(equalTo: pageContentView.widthAnchor),
             trackerParamsTableView.heightAnchor.constraint(equalToConstant: CGFloat(trackerParamsTableViewRowsCount * 75))
         ])
         
@@ -245,6 +247,17 @@ class NewTrackerViewController: UIViewController {
         ])
         /*----------------------------------------------------------------*/
         
+        selectedCategory = editTracker?.category
+        selectedColor = editTracker?.color
+        selectedEmoji = editTracker?.emoji
+        selectedSchedule = unpackSchedule(editTracker?.schedule)
+        
+        print(selectedCategory)
+        print(selectedColor)
+        print(selectedEmoji)
+        print(selectedSchedule)
+        
+        
     }
         
     @objc private func cancelCreation() {
@@ -308,6 +321,20 @@ class NewTrackerViewController: UIViewController {
     
     private func updateSelectedCategoryName() {
         trackerParamsTableView.reloadData()
+    }
+    
+    private func unpackSchedule(_ schedule: NSNumber?) -> Schedule {
+        guard let scheduleNSNumber = schedule else { return Schedule(mon: false, tue: false, wed: false, thu: false, fri: false, sat: false, sun: false) }
+        let schedule = Int(truncating: scheduleNSNumber)
+        return Schedule(
+            mon: schedule & 2 > 0 ? true : false,
+            tue: schedule & 4 > 0 ? true : false,
+            wed: schedule & 8 > 0 ? true : false,
+            thu: schedule & 16 > 0 ? true : false,
+            fri: schedule & 32 > 0 ? true : false,
+            sat: schedule & 64 > 0 ? true : false,
+            sun: schedule & 1 > 0 ? true : false
+        )
     }
 }
 
@@ -387,6 +414,10 @@ extension NewTrackerViewController: UICollectionViewDataSource, UICollectionView
         case emojiCollection: guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: EmojiCell.identifier, for: indexPath) as? EmojiCell else { return UICollectionViewCell() }
             cell.prepareForReuse()
             cell.symbol.text = emoji[indexPath.row]
+            if emoji[indexPath.row] == selectedEmoji {
+                cell.backgroundColor = UIColor(named: "YPGray")?.withAlphaComponent(1.0)
+                collectionView.selectItem(at: indexPath, animated: false, scrollPosition: .top)
+            }
             cell.layer.cornerRadius = 16
             return cell
         case colorCollection:

@@ -1,4 +1,5 @@
 import UIKit
+import YandexMobileMetrica
 
 final class TrackerListViewController: UIViewController, DataStoreDelegate {
     private var store: DataStore
@@ -241,6 +242,12 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     }
     
     @objc private func addTracker() {
+        //let params : [AnyHashable : Any] = ["key1": "value1", "key2": "value2"]
+        YMMYandexMetrica.reportEvent("Add Button taped", parameters: nil)
+        /*YMMYandexMetrica.reportEvent("EVENT", parameters: params, onFailure: { error in
+            print("REPORT ERROR: %@", error.localizedDescription)
+        })*/
+        
         let createNewTrackerVC = CreateNewTrackerViewController(store: store)
         createNewTrackerVC.completionCancel = { [weak self] in
             self?.dismiss(animated: true)
@@ -325,6 +332,43 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: collectionView.frame.width, height: 60)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
+        let indexPath = indexPaths[0]
+        guard let tracker = self.categories?[indexPath.section].trackers[indexPath.row] else { return nil }
+        
+        return UIContextMenuConfiguration(actionProvider: { actions in
+            return UIMenu(children: [
+                UIAction(title: tracker.pinned ? LocalizedString.unpin : LocalizedString.pin) { [weak self] _ in
+                    guard let self = self else { return }
+                    try? self.trackerData?.togglePinned(trackerId: tracker.id)
+                },
+                
+                UIAction(title: LocalizedString.edit) { [weak self] _ in
+                    guard let self = self else { return }
+                    var trackerType: TrackerType = .event
+                    if let _ = tracker.schedule {
+                        trackerType = .habit
+                    }
+                    let trackerVC = NewTrackerViewController(trackerType: trackerType, store: self.store, editTracker: tracker.id)
+                    trackerVC.completionCancel = { [weak self] in
+                        self?.dismiss(animated: true)
+                    }
+                    trackerVC.completionCreate = { [weak self] in
+                        self?.updateTrackers()
+                        self?.dismiss(animated: true)
+                    }
+                    self.present(trackerVC, animated: true)
+                    
+                },
+                
+                UIAction(title: LocalizedString.delete, attributes: .destructive) { [weak self] _ in
+                    guard let self = self else { return }
+                    //viewModel.deleteCategory(at: indexPath)
+                }
+            ])
+        })
     }
 }
 
