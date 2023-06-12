@@ -46,7 +46,7 @@ final class TrackerStore: DataStoreDelegate {
         
         rawTrackers.forEach {
             let id = $0
-            let category = $0.category?.name
+            let category = $0.pinned ? LocalizedString.pinned : $0.category?.name
             var schedule: Schedule?
             if let _ = $0.schedule {
                 schedule = unpackSсhedule($0.schedule as? Int32 ?? 0)
@@ -86,6 +86,14 @@ final class TrackerStore: DataStoreDelegate {
             }
             newTracker.category = category
             try dataStore.saveRecord(object: newTracker)
+        } catch let error {
+            fatalError(error.localizedDescription)
+        }
+    }
+    
+    func deleteTracker(tracker: TrackerCoreData) throws {
+        do {
+            try dataStore.deleteRecord(object: tracker)
         } catch let error {
             fatalError(error.localizedDescription)
         }

@@ -35,3 +35,5 @@
 "newTracker" = "New tracker";
 "pin" = "Pin";
 "unpin" = "Unpin";
+"pinned" = "Pinned";
+"deleteTrackerConfirmation" = "Are you sure want to delete tracker?";

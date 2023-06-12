@@ -2,6 +2,7 @@ import UIKit
 
 final class TrackerListItem: UICollectionViewCell {
     static let reuseIdentifier = "trackerListItem"
+    
     let itemBackground: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 16
@@ -14,6 +15,12 @@ final class TrackerListItem: UICollectionViewCell {
         label.font = UIFont(name: "YSDisplay-Bold", size: 12)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
+    }()
+    
+    let iconPinned: UIImageView = {
+        let view = UIImageView(image: UIImage(named: AppImages.iconPinned.rawValue))
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
     }()
     
     let title: UILabel = {
@@ -96,5 +103,23 @@ final class TrackerListItem: UICollectionViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func showPinnedIcon(_ show: Bool) {
+        let isChild = iconPinned.isDescendant(of: itemBackground)
+        if show && !isChild {
+            itemBackground.addSubview(iconPinned)
+            setupIconPinnedConstraints()
+        } else if !show && isChild {
+            iconPinned.removeFromSuperview()
+        }
+    }
+    
+    func setupIconPinnedConstraints() {
+        NSLayoutConstraint.activate([
+            iconPinned.topAnchor.constraint(equalTo: itemBackground.topAnchor, constant: 12),
+            iconPinned.leadingAnchor.constraint(greaterThanOrEqualTo: itemBackground.leadingAnchor),
+            iconPinned.trailingAnchor.constraint(equalTo: itemBackground.trailingAnchor, constant: -4)
+        ])
     }
 }

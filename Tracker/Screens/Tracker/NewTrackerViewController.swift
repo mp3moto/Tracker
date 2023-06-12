@@ -323,8 +323,8 @@ class NewTrackerViewController: UIViewController {
         trackerParamsTableView.reloadData()
     }
     
-    private func unpackSchedule(_ schedule: NSNumber?) -> Schedule {
-        guard let scheduleNSNumber = schedule else { return Schedule(mon: false, tue: false, wed: false, thu: false, fri: false, sat: false, sun: false) }
+    private func unpackSchedule(_ schedule: NSNumber?) -> Schedule? {
+        guard let scheduleNSNumber = schedule else { return nil /*Schedule(mon: false, tue: false, wed: false, thu: false, fri: false, sat: false, sun: false)*/ }
         let schedule = Int(truncating: scheduleNSNumber)
         return Schedule(
             mon: schedule & 2 > 0 ? true : false,

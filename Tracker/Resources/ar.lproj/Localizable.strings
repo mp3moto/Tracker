@@ -33,5 +33,7 @@
 "habit" = "العادة";
 "event" = "حدث غير منتظم";
 "newTracker" = "تعقب جديد";
-"pin" = "Pin";
-"unpin" = "Unpin";
+"pin" = "دبوس";
+"unpin" = "فك";
+"pinned" = "مثبت";
+"deleteTrackerConfirmation" = "هل أنت متأكد من أنك تريد حذف المتعقب؟";

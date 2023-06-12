@@ -35,5 +35,7 @@
 "habit" = "Gewohnheit";
 "event" = "Unregelmäßiges Ereignis";
 "newTracker" = "Neuer Tracker";
-"pin" = "Pin";
-"unpin" = "Unpin";
+"pin" = "Stift";
+"unpin" = "Lösen";
+"pinned" = "Angepinnt";
+"deleteTrackerConfirmation" = "Möchten Sie den Tracker wirklich löschen?";

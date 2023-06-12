@@ -276,6 +276,17 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         placeholderIfNeeded()
     }
     
+    @objc private func deleteConfirmationDialog(tracker: TrackerCoreData) {
+        let deleteDialog = UIAlertController(title: LocalizedString.deleteTrackerConfirmation, message: nil, preferredStyle: .actionSheet)
+        
+        deleteDialog.addAction(UIAlertAction(title: LocalizedString.delete, style: .destructive) { [weak self] _ in
+            try? self?.trackerData?.deleteTracker(tracker: tracker)
+        })
+        deleteDialog.addAction(UIAlertAction(title: LocalizedString.cancel, style: .cancel))
+
+        present(deleteDialog, animated: true)
+    }
+    
     func didUpdate() {
         updateTrackers()
     }
@@ -304,8 +315,9 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
         cell.icon.text = tracker.emoji
         cell.title.text = tracker.title
         cell.doneLabel.text = String.localizedStringWithFormat(NSLocalizedString("daysDone", comment: ""), tracker.doneCount)  //"\(tracker.doneCount) дней"
-        cell.doneButton.stateEnabled = !tracker.done //done
+        cell.doneButton.stateEnabled = !tracker.done
         cell.doneButton.backgroundColor = UIColor(named: color)
+        cell.showPinnedIcon(tracker.pinned)
         trackerIds.append(tracker.id)
         cell.doneButton.tag = trackerIds.endIndex - 1
         cell.doneButton.addTarget(self, action: #selector(checkDone), for: .touchUpInside)
@@ -365,7 +377,7 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
                 
                 UIAction(title: LocalizedString.delete, attributes: .destructive) { [weak self] _ in
                     guard let self = self else { return }
-                    //viewModel.deleteCategory(at: indexPath)
+                    self.deleteConfirmationDialog(tracker: tracker.id)
                 }
             ])
         })

@@ -50,6 +50,8 @@ struct LocalizedString {
     static let newTracker = NSLocalizedString("newTracker", comment: "")
     static let pin = NSLocalizedString("pin", comment: "")
     static let unpin = NSLocalizedString("unpin", comment: "")
+    static let pinned = NSLocalizedString("pinned", comment: "")
+    static let deleteTrackerConfirmation = NSLocalizedString("deleteTrackerConfirmation", comment: "")
 }
 
 enum CoreDataClasses: String {
@@ -61,4 +63,8 @@ enum CoreDataClasses: String {
 enum TrackerType: String {
     case habit
     case event
+}
+
+enum AppImages: String {
+    case iconPinned
 }
