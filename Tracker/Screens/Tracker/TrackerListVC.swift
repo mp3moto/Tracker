@@ -2,10 +2,9 @@ import UIKit
 import YandexMobileMetrica
 
 final class TrackerListViewController: UIViewController, DataStoreDelegate {
-    private var store: DataStore
-    private var trackerData: TrackerStore?
-    private var categoryData: CategoryStore?
-    private var trackerRecordData: TrackerRecordStore?
+    private let trackerStore: TrackerStore
+    private let categoryStore: CategoryStore
+    private let trackerRecordStore: TrackerRecordStore
     private let dateFormatter = DateFormatter()
     private let searchController = UISearchController(searchResultsController: nil)
     private let collection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
@@ -28,7 +27,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     }()
     private var dateFromDatePicker: Date? {
         didSet {
-            trackerData?.dateFromDatePicker = dateFromDatePicker
+            trackerStore.dateFromDatePicker = dateFromDatePicker
         }
     }
     
@@ -98,12 +97,11 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         return noTrackersIndicatorView
     }()
     
-    init(store: DataStore) {
-        self.store = store
-        categoryData = CategoryStore(dataStore: store)
-        trackerData = TrackerStore(dataStore: store)
-        trackerRecordData = TrackerRecordStore(dataStore: store)
-        trackerData?.trackerRecordStore = trackerRecordData
+    init(trackerStore: TrackerStore, categoryStore: CategoryStore, trackerRecordStore: TrackerRecordStore) {
+        self.trackerStore = trackerStore
+        self.categoryStore = categoryStore
+        self.trackerRecordStore = trackerRecordStore
+        trackerStore.trackerRecordStore = trackerRecordStore
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -118,7 +116,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         configureNavigationBar()
         dateFromDatePicker = datePicker.date.prepareDate()
         guard let date = dateFromDatePicker else { return }
-        trackerData?.dateFromDatePicker = date
+        trackerStore.dateFromDatePicker = date
         
         categories = prepareCategories()
         
@@ -137,29 +135,26 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
             collection.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
         
-        trackerData?.delegate = self
-        trackerRecordData?.delegate = self
+        trackerStore.delegate = self
+        trackerRecordStore.delegate = self
         
         placeholderIfNeeded()
     }
     
     private func prepareCategories() -> [TrackerCategory] {
         var result: [TrackerCategory] = []
-        
-         if let trackerData = trackerData {
-             let filteredTrackers = trackerData.getTrackers()
-         
-             var categoryNames: Set<String> = []
-             filteredTrackers.forEach {
-                categoryNames.insert($0.category)
-             }
-             let categoryNamesSorted = categoryNames.sorted()
-             categoryNamesSorted.forEach {
-                 let currentCategory = $0
-                 result.append(TrackerCategory(category: currentCategory, trackers: filteredTrackers.filter { $0.category == currentCategory }))
-             }
-         }
-        
+        let filteredTrackers = trackerStore.getTrackers()
+
+        var categoryNames: Set<String> = []
+        filteredTrackers.forEach {
+            categoryNames.insert($0.category)
+        }
+        let categoryNamesSorted = categoryNames.sorted()
+        categoryNamesSorted.forEach {
+            let currentCategory = $0
+            result.append(TrackerCategory(category: currentCategory, trackers: filteredTrackers.filter { $0.category == currentCategory }))
+        }
+
         return result
     }
 
@@ -242,13 +237,9 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     }
     
     @objc private func addTracker() {
-        //let params : [AnyHashable : Any] = ["key1": "value1", "key2": "value2"]
         YMMYandexMetrica.reportEvent("Add Button taped", parameters: nil)
-        /*YMMYandexMetrica.reportEvent("EVENT", parameters: params, onFailure: { error in
-            print("REPORT ERROR: %@", error.localizedDescription)
-        })*/
         
-        let createNewTrackerVC = CreateNewTrackerViewController(store: store)
+        let createNewTrackerVC = CreateNewTrackerViewController(trackerStore: trackerStore, categoryStore: categoryStore)
         createNewTrackerVC.completionCancel = { [weak self] in
             self?.dismiss(animated: true)
         }
@@ -262,7 +253,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     @objc private func checkDone(sender: DoneButton) {
         guard let date = dateFromDatePicker else { return }
         do {
-            try trackerRecordData?.toggleTrackerRecord(doneAt: date, trackerId: trackerIds[sender.tag])
+            try trackerRecordStore.toggleTrackerRecord(doneAt: date, trackerId: trackerIds[sender.tag])
         } catch let error {
             print(error.localizedDescription)
         }
@@ -280,7 +271,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         let deleteDialog = UIAlertController(title: LocalizedString.deleteTrackerConfirmation, message: nil, preferredStyle: .actionSheet)
         
         deleteDialog.addAction(UIAlertAction(title: LocalizedString.delete, style: .destructive) { [weak self] _ in
-            try? self?.trackerData?.deleteTracker(tracker: tracker)
+            try? self?.trackerStore.deleteTracker(tracker: tracker)
         })
         deleteDialog.addAction(UIAlertAction(title: LocalizedString.cancel, style: .cancel))
 
@@ -314,7 +305,7 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
         cell.itemBackground.backgroundColor = UIColor(named: color)
         cell.icon.text = tracker.emoji
         cell.title.text = tracker.title
-        cell.doneLabel.text = String.localizedStringWithFormat(NSLocalizedString("daysDone", comment: ""), tracker.doneCount)  //"\(tracker.doneCount) дней"
+        cell.doneLabel.text = String.localizedStringWithFormat(NSLocalizedString("daysDone", comment: ""), tracker.doneCount)
         cell.doneButton.stateEnabled = !tracker.done
         cell.doneButton.backgroundColor = UIColor(named: color)
         cell.showPinnedIcon(tracker.pinned)
@@ -347,14 +338,13 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
     }
     
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
-        let indexPath = indexPaths[0]
-        guard let tracker = self.categories?[indexPath.section].trackers[indexPath.row] else { return nil }
+        guard !indexPaths.isEmpty,
+              let tracker = self.categories?[indexPaths[0].section].trackers[indexPaths[0].row] else { return nil }
         
         return UIContextMenuConfiguration(actionProvider: { actions in
             return UIMenu(children: [
                 UIAction(title: tracker.pinned ? LocalizedString.unpin : LocalizedString.pin) { [weak self] _ in
-                    guard let self = self else { return }
-                    try? self.trackerData?.togglePinned(trackerId: tracker.id)
+                    try? self?.trackerStore.togglePinned(trackerId: tracker.id)
                 },
                 
                 UIAction(title: LocalizedString.edit) { [weak self] _ in
@@ -363,7 +353,7 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
                     if let _ = tracker.schedule {
                         trackerType = .habit
                     }
-                    let trackerVC = NewTrackerViewController(trackerType: trackerType, store: self.store, editTracker: tracker.id)
+                    let trackerVC = NewTrackerViewController(trackerType: trackerType, trackerStore: self.trackerStore, categoryStore: self.categoryStore, editTracker: tracker.id)
                     trackerVC.completionCancel = { [weak self] in
                         self?.dismiss(animated: true)
                     }
@@ -372,7 +362,6 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
                         self?.dismiss(animated: true)
                     }
                     self.present(trackerVC, animated: true)
-                    
                 },
                 
                 UIAction(title: LocalizedString.delete, attributes: .destructive) { [weak self] _ in
@@ -390,11 +379,11 @@ extension TrackerListViewController: UISearchResultsUpdating {
               searchText.count > 0,
               searchController.isActive
         else {
-            trackerData?.searchQuery = ""
+            trackerStore.searchQuery = ""
             updateTrackers()
             return
         }
-        trackerData?.searchQuery = searchText
+        trackerStore.searchQuery = searchText
         updateTrackers()
     }
 }

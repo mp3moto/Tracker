@@ -30,8 +30,6 @@
 "trackers" = "Tracker";
 "search" = "Suche";
 "statistics" = "Statistik";
-"habit" = "Привычка";
-"event" = "Нерегулярное событие";
 "habit" = "Gewohnheit";
 "event" = "Unregelmäßiges Ereignis";
 "newTracker" = "Neuer Tracker";
@@ -39,3 +37,4 @@
 "unpin" = "Lösen";
 "pinned" = "Angepinnt";
 "deleteTrackerConfirmation" = "Möchten Sie den Tracker wirklich löschen?";
+"editTracker" = "Tracker bearbeiten";

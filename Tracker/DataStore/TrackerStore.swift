@@ -2,7 +2,7 @@ import Foundation
 
 final class TrackerStore: DataStoreDelegate {
     weak var delegate: DataStoreDelegate?
-    var trackerRecordStore: TrackerRecordStore?
+    weak var trackerRecordStore: TrackerRecordStore?
     private var dataStore: DataStore
     var dateFromDatePicker: Date? {
         didSet {
@@ -79,11 +79,7 @@ final class TrackerStore: DataStoreDelegate {
             newTracker.emoji = emoji
             newTracker.color = color
             newTracker.pinned = false
-            if let schedule = schedule {
-                newTracker.schedule = (schedule.packed()) as NSNumber
-            } else {
-                newTracker.schedule = nil
-            }
+            newTracker.schedule = schedule?.packed() as NSNumber?
             newTracker.category = category
             try dataStore.saveRecord(object: newTracker)
         } catch let error {
@@ -94,6 +90,14 @@ final class TrackerStore: DataStoreDelegate {
     func deleteTracker(tracker: TrackerCoreData) throws {
         do {
             try dataStore.deleteRecord(object: tracker)
+        } catch let error {
+            fatalError(error.localizedDescription)
+        }
+    }
+    
+    func updateTracker(tracker: TrackerCoreData) throws {
+        do {
+            try dataStore.saveRecord(object: tracker)
         } catch let error {
             fatalError(error.localizedDescription)
         }

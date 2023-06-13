@@ -111,18 +111,6 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        if controller == trackersFRC {
-            trackersDelegate?.didUpdate()
-        }
-        /*
-        switch controller {
-        case categoriesFRC:
-            try? categoriesFRC.performFetch()
-        case trackersFRC:
-            trackersDelegate?.didUpdate()
-        default:
-            break
-        }
-         */
+        trackersDelegate?.didUpdate()
     }
 }

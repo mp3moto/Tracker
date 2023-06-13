@@ -37,3 +37,4 @@
 "unpin" = "فك";
 "pinned" = "مثبت";
 "deleteTrackerConfirmation" = "هل أنت متأكد من أنك تريد حذف المتعقب؟";
+"editTracker" = "Edit tracker";

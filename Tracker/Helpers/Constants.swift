@@ -52,6 +52,7 @@ struct LocalizedString {
     static let unpin = NSLocalizedString("unpin", comment: "")
     static let pinned = NSLocalizedString("pinned", comment: "")
     static let deleteTrackerConfirmation = NSLocalizedString("deleteTrackerConfirmation", comment: "")
+    static let editTracker = NSLocalizedString("editTracker", comment: "")
 }
 
 enum CoreDataClasses: String {

@@ -1,8 +1,7 @@
 import UIKit
 
 class NewTrackerViewController: UIViewController {
-    private let trackerType: String
-    private let store: DataStore
+    private let trackerType: TrackerType
     private var editTracker: TrackerCoreData?
     var completionCancel: (() -> Void)?
     var completionCreate: (() -> Void)?
@@ -16,8 +15,8 @@ class NewTrackerViewController: UIViewController {
     private var selectedEmoji: String?
     private var selectedColor: String?
     
-    private let trackerData: TrackerStore?
-    private let categoryData: CategoryStore?
+    private let trackerStore: TrackerStore
+    private let categoryStore: CategoryStore //Не пойму нужно это тут или нет?
     private let trackerParamsTableView = UITableView()
     private var trackerParamsTableViewValues: [String]?
     
@@ -69,9 +68,10 @@ class NewTrackerViewController: UIViewController {
     private let emoji: [String] = ["🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"]
     private let colors: [String] = ["Sunset Orange", "West Side", "Azure Radiance", "Electric Violet", "Emerald", "Orchid", "Azalea", "Dodger Blue", "Turquoise", "Minsk", "Persimmon", "Carnation Pink", "Manhattan", "Cornflower Blue", "Violet", "Medium Purple", "Purple", "Soft Emerald"]
     
-    init(trackerType: TrackerType, store: DataStore, editTracker: TrackerCoreData? = nil) {
-        self.trackerType = trackerType.rawValue
-        self.store = store
+    init(trackerType: TrackerType, trackerStore: TrackerStore, categoryStore: CategoryStore, editTracker: TrackerCoreData? = nil) {
+        self.trackerType = trackerType
+        self.trackerStore = trackerStore
+        self.categoryStore = categoryStore
         self.editTracker = editTracker
         
         switch trackerType {
@@ -81,8 +81,6 @@ class NewTrackerViewController: UIViewController {
             trackerParamsTableViewValues = [LocalizedString.category]
         }
         
-        trackerData = TrackerStore(dataStore: store)
-        categoryData = CategoryStore(dataStore: store)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -106,11 +104,13 @@ class NewTrackerViewController: UIViewController {
         
         let titleLabel: UILabel = {
             let label = UILabel()
-            if trackerType == "habit" {
-                label.text = LocalizedString.newHabit
+
+            if let _ = editTracker {
+                label.text = LocalizedString.editTracker
             } else {
-                label.text = LocalizedString.newEvent
+                label.text = trackerType == .habit ? LocalizedString.newHabit : LocalizedString.newEvent
             }
+
             label.font = UIFont(name: "YSDisplay-Medium", size: 16)
             label.textColor = UIColor(named: "YPBlack")
             label.translatesAutoresizingMaskIntoConstraints = false
@@ -251,13 +251,6 @@ class NewTrackerViewController: UIViewController {
         selectedColor = editTracker?.color
         selectedEmoji = editTracker?.emoji
         selectedSchedule = unpackSchedule(editTracker?.schedule)
-        
-        print(selectedCategory)
-        print(selectedColor)
-        print(selectedEmoji)
-        print(selectedSchedule)
-        
-        
     }
         
     @objc private func cancelCreation() {
@@ -273,10 +266,25 @@ class NewTrackerViewController: UIViewController {
             return
         }
         do {
-            _ = try trackerData?.addTracker(title: title, emoji: emoji, color: color, category: category, schedule: selectedSchedule)
+            if let tracker = editTracker {
+                tracker.title = title
+                tracker.emoji = emoji
+                tracker.color = color
+                tracker.category = category
+                tracker.schedule = selectedSchedule?.packed() as NSNumber?
+                try trackerStore.updateTracker(tracker: tracker)
+            } else {
+                try trackerStore.addTracker(
+                    title: title,
+                    emoji: emoji,
+                    color: color,
+                    category: category,
+                    schedule: selectedSchedule
+                )
+            }
             completionCreate?()
-        } catch {
-            print("error ocured while tracker created")
+        } catch let error {
+            fatalError(error.localizedDescription)
         }
     }
     
@@ -312,7 +320,7 @@ class NewTrackerViewController: UIViewController {
         else { return false }
         let trackerNameLength = trackerName.text?.count ?? 0
         let trackerNameIsOK = trackerNameLength > 0 && trackerNameLength <= 38
-        if trackerType == Const.habit {
+        if trackerType == .habit {
             return selectedSchedule != nil && trackerNameIsOK
         } else {
             return trackerNameIsOK
@@ -372,21 +380,17 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch indexPath.row {
         case 0:
-            let categoriesVC = CategoriesViewCotroller(store: store)
-            let categoryStore = CategoryStore(dataStore: store)
             let categoriesViewModel = CategoriesViewModel(model: categoryStore, selectedCategory: selectedCategory)
-            
             categoriesViewModel.categorySelectCompletion = { [weak self] selectedCategory in
                 self?.setCategory(category: selectedCategory)
                 self?.dismiss(animated: true)
             }
             
-            categoriesVC.initialize(viewModel: categoriesViewModel)
-            
+            let categoriesVC = CategoriesViewCotroller(viewModel: categoriesViewModel)
             categoriesVC.categoryUpdateCompletion = { [weak self] in
                 self?.updateSelectedCategoryName()
             }
-
+            
             present(categoriesVC, animated: true)
         default:
             let scheduleVC = ScheduleViewCotroller(schedule: selectedSchedule)
@@ -425,6 +429,9 @@ extension NewTrackerViewController: UICollectionViewDataSource, UICollectionView
             cell.prepareForReuse()
             cell.colorView.backgroundColor = UIColor(named: colors[indexPath.row])
             cell.layer.borderColor = UIColor(named: colors[indexPath.row])?.withAlphaComponent(0.3).cgColor
+            if colors[indexPath.row] == selectedColor {
+                cell.layer.borderWidth = 3
+            }
             cell.layer.cornerRadius = 12
             return cell
         default: return UICollectionViewCell()

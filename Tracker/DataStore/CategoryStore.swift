@@ -1,27 +1,12 @@
 import Foundation
 
 final class CategoryStore {
-    //weak var delegate: DataStoreDelegate?
     private var dataStore: DataStore
     private var count: Int = 0
-    //private var searchQuery: String = ""
     
     init(dataStore: DataStore) {
         self.dataStore = dataStore
     }
-    /*
-    func unpackSсhedule(_ packed: Int32) -> Schedule {
-        Schedule(
-            mon: packed & 64 == 64,
-            tue: packed & 32 == 32,
-            wed: packed & 16 == 16,
-            thu: packed & 8 == 8,
-            fri: packed & 4 == 4,
-            sat: packed & 2 == 2,
-            sun: packed & 1 == 1
-        )
-    }
-    */
     
     func getCategories() -> [TrackerCategoryCoreData] {
         let categories = dataStore.getRecords(className: .TrackerCategoryCoreData) as [TrackerCategoryCoreData]

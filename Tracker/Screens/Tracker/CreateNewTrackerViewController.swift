@@ -1,12 +1,14 @@
 import UIKit
 
 final class CreateNewTrackerViewController: UIViewController {
-    private let store: DataStore
+    private let trackerStore: TrackerStore
+    private let categoryStore: CategoryStore
     var completionCancel: (() -> Void)?
     var completionCreate: (() -> Void)?
     
-    init(store: DataStore) {
-        self.store = store
+    init(trackerStore: TrackerStore, categoryStore: CategoryStore) {
+        self.trackerStore = trackerStore
+        self.categoryStore = categoryStore
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -16,7 +18,7 @@ final class CreateNewTrackerViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground//UIColor(named: "YPWhite")
+        view.backgroundColor = .systemBackground
         
         let titleView = UILabel()
         titleView.text = LocalizedString.newTracker
@@ -61,9 +63,11 @@ final class CreateNewTrackerViewController: UIViewController {
         ])
     }
     
+    //Здесь что-то придумать с дублированием
+    
     @objc private func addNewHabit() {
         let trackerType = TrackerType.habit
-        let newHabitVC = NewTrackerViewController(trackerType: trackerType, store: store)
+        let newHabitVC = NewTrackerViewController(trackerType: trackerType, trackerStore: trackerStore, categoryStore: categoryStore)
         newHabitVC.completionCancel = { [weak self] in
             self?.completionCancel?()
         }
@@ -75,7 +79,7 @@ final class CreateNewTrackerViewController: UIViewController {
     
     @objc private func addNewEvent() {
         let trackerType = TrackerType.event
-        let newEventVC = NewTrackerViewController(trackerType: trackerType, store: store)
+        let newEventVC = NewTrackerViewController(trackerType: trackerType, trackerStore: trackerStore, categoryStore: categoryStore)
         newEventVC.completionCancel = { [weak self] in
             self?.completionCancel?()
         }

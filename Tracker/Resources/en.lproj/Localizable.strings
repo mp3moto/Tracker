@@ -37,3 +37,4 @@
 "unpin" = "Unpin";
 "pinned" = "Pinned";
 "deleteTrackerConfirmation" = "Are you sure want to delete tracker?";
+"editTracker" = "Edit tracker";
