@@ -10,6 +10,11 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     private let collection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     private var categories: [TrackerCategory]?
     private var trackerIds: [TrackerCoreData] = []
+    private var trackersFilter: TrackersFilter = .all {
+        didSet {
+            print(trackersFilter)
+        }
+    }
     private var searchBarIsEmpty: Bool {
         guard let text = searchController.searchBar.text,
               text.count > 0
@@ -97,6 +102,19 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         return noTrackersIndicatorView
     }()
     
+    private let filtersButton: UIButton = {
+        let button = UIButton()
+        button.backgroundColor = UIColor(named: "YPBlue")
+        button.setTitle(LocalizedString.filters, for: .normal)
+        button.titleLabel?.font = UIFont(name: "YSDisplay-Regular", size: 17)
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 16
+        button.contentEdgeInsets = UIEdgeInsets(top: 14, left: 20, bottom: 14, right: 20)
+        button.sizeToFit()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     init(trackerStore: TrackerStore, categoryStore: CategoryStore, trackerRecordStore: TrackerRecordStore) {
         self.trackerStore = trackerStore
         self.categoryStore = categoryStore
@@ -113,6 +131,9 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         super.viewDidLoad()
         
         view.backgroundColor = .systemBackground
+        //for screenshotTest
+        //view.backgroundColor = .green
+        //------------------
         configureNavigationBar()
         dateFromDatePicker = datePicker.date.prepareDate()
         guard let date = dateFromDatePicker else { return }
@@ -137,13 +158,22 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         
         trackerStore.delegate = self
         trackerRecordStore.delegate = self
+
+        view.addSubview(filtersButton)
+        
+        NSLayoutConstraint.activate([
+            filtersButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            filtersButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -17)
+        ])
+        
+        filtersButton.addTarget(self, action: #selector(showFilteringMenu), for: .touchUpInside)
         
         placeholderIfNeeded()
     }
     
     private func prepareCategories() -> [TrackerCategory] {
         var result: [TrackerCategory] = []
-        let filteredTrackers = trackerStore.getTrackers()
+        let filteredTrackers = trackerStore.getTrackers(filter: trackersFilter)
 
         var categoryNames: Set<String> = []
         filteredTrackers.forEach {
@@ -168,6 +198,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         if !isFiltering {
             if categories?.count == 0 {
                 collection.addSubview(noTrackersView)
+                //filtersButton.isHidden = true
                 NSLayoutConstraint.activate([
                     noTrackersView.centerXAnchor.constraint(equalTo: collection.centerXAnchor),
                     noTrackersView.centerYAnchor.constraint(equalTo: collection.centerYAnchor)
@@ -175,6 +206,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
             } else {
                 if noTrackersView.isDescendant(of: collection) {
                     noTrackersView.removeFromSuperview()
+                    //filtersButton.isHidden = false
                 }
             }
         } else {
@@ -276,6 +308,18 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         deleteDialog.addAction(UIAlertAction(title: LocalizedString.cancel, style: .cancel))
 
         present(deleteDialog, animated: true)
+    }
+    
+    @objc private func showFilteringMenu() {
+        let filtersViewModel = FiltersViewModel(selectedFilter: trackersFilter)
+        filtersViewModel.onFilterSelect = { [weak self] selectedFilter in
+            self?.trackersFilter = selectedFilter
+            self?.updateTrackers()
+            self?.dismiss(animated: true)
+        }
+        
+        let filtersVC = FiltersViewController(viewModel: filtersViewModel)
+        present(filtersVC, animated: true)
     }
     
     func didUpdate() {

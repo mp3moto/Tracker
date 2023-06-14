@@ -28,20 +28,27 @@ final class TrackerStore: DataStoreDelegate {
         )
     }
 
-    private func prepareSQLQueryString() -> String {
+    private func prepareSQLQueryString(filter: TrackersFilter) -> String {
         let weekDayPacked = dateFromDatePicker?.getWeekDay() ?? 0
-        let defaultResult = "(schedule = NULL) OR (schedule & \(weekDayPacked) != 0)"
+        var sql = ""
+        switch filter {
+        case .today:
+            sql = "(schedule != NULL) AND (schedule & \(weekDayPacked) != 0)"
+        default:
+            sql = "(schedule = NULL) OR (schedule & \(weekDayPacked) != 0)"
+        }
+
         if searchQuery.count > 0 {
-            return "(\(defaultResult)) AND title CONTAINS[c] '\(searchQuery)'"
+            return "(\(sql)) AND title CONTAINS[c] '\(searchQuery)'"
         } else {
             searchQuery = ""
-            return defaultResult
+            return sql
         }
     }
     
-    func getTrackers() -> [Tracker] {
+    func getTrackers(filter: TrackersFilter) -> [Tracker] {
         guard let date = dateFromDatePicker else { return [] }
-        let rawTrackers = dataStore.getRecords(className: .TrackerCoreData, sql: prepareSQLQueryString()) as [TrackerCoreData]
+        let rawTrackers = dataStore.getRecords(className: .TrackerCoreData, sql: prepareSQLQueryString(filter: filter)) as [TrackerCoreData]
         var trackers: [Tracker] = []
         
         rawTrackers.forEach {
@@ -52,20 +59,34 @@ final class TrackerStore: DataStoreDelegate {
                 schedule = unpackSсhedule($0.schedule as? Int32 ?? 0)
             }
             let records = trackerRecordStore?.getTrackerRecords(forTracker: id, atDate: date)
+            let done = trackerRecordStore?.isTrackerDone(doneAt: date, trackerId: id) ?? false
+            
+            var filterCondition: Bool
+            switch filter {
+            case .todayCompleted:
+                filterCondition = true
+            case .todayUncompleted:
+                filterCondition = false
+            default:
+                filterCondition = done
+            }
+            
             if let category = category {
-                trackers.append(
-                    Tracker(
-                        id: id,
-                        title: $0.title ?? Const.noName,
-                        emoji: $0.emoji ?? Const.emptyString,
-                        color: $0.color ?? Const.defaultColor,
-                        category: category,
-                        schedule: schedule,
-                        doneCount: records?.count ?? 0,
-                        done: trackerRecordStore?.isTrackerDone(doneAt: date, trackerId: id) ?? false,
-                        pinned: $0.pinned
+                if done == filterCondition {
+                    trackers.append(
+                        Tracker(
+                            id: id,
+                            title: $0.title ?? Const.noName,
+                            emoji: $0.emoji ?? Const.emptyString,
+                            color: $0.color ?? Const.defaultColor,
+                            category: category,
+                            schedule: schedule,
+                            doneCount: records?.count ?? 0,
+                            done: trackerRecordStore?.isTrackerDone(doneAt: date, trackerId: id) ?? false,
+                            pinned: $0.pinned
+                        )
                     )
-                )
+                }
             }
         }
         

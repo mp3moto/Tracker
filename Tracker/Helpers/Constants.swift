@@ -53,6 +53,12 @@ struct LocalizedString {
     static let pinned = NSLocalizedString("pinned", comment: "")
     static let deleteTrackerConfirmation = NSLocalizedString("deleteTrackerConfirmation", comment: "")
     static let editTracker = NSLocalizedString("editTracker", comment: "")
+    static let save = NSLocalizedString("save", comment: "")
+    static let filters = NSLocalizedString("filters", comment: "")
+    static let trackersFilterAll = NSLocalizedString("trackersFilterAll", comment: "")
+    static let trackersFilterToday = NSLocalizedString("trackersFilterToday", comment: "")
+    static let trackersFilterTodayCompleted = NSLocalizedString("trackersFilterTodayCompleted", comment: "")
+    static let trackersFilterTodayUncompleted = NSLocalizedString("trackersFilterTodayUncompleted", comment: "")
 }
 
 enum CoreDataClasses: String {

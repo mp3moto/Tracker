@@ -107,6 +107,7 @@ class NewTrackerViewController: UIViewController {
 
             if let _ = editTracker {
                 label.text = LocalizedString.editTracker
+                createButton.setTitle(LocalizedString.save, for: .normal)
             } else {
                 label.text = trackerType == .habit ? LocalizedString.newHabit : LocalizedString.newEvent
             }

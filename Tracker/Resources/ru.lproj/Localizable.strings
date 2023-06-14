@@ -38,3 +38,9 @@
 "pinned" = "Закрепленные";
 "deleteTrackerConfirmation" = "Уверены что хотите удалить трекер?";
 "editTracker" = "Редактирование привычки";
+"save" = "Сохранить";
+"filters" = "Фильтры";
+"trackersFilterAll" = "Все трекеры";
+"trackersFilterToday" = "Трекеры на сегодня";
+"trackersFilterTodayCompleted" = "Завершенные";
+"trackersFilterTodayUncompleted" = "Незавершенные";

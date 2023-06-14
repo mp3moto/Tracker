@@ -38,3 +38,9 @@
 "pinned" = "Angepinnt";
 "deleteTrackerConfirmation" = "Möchten Sie den Tracker wirklich löschen?";
 "editTracker" = "Tracker bearbeiten";
+"save" = "Speichern";
+"filters" = "Filters";
+"trackersFilterAll" = "All Trackers";
+"trackersFilterToday" = "Tracker for today";
+"trackersFilterTodayCompleted" = "Completed";
+"trackersFilterTodayUncompleted" = "Uncompleted";
