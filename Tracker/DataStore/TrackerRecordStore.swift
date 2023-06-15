@@ -35,6 +35,28 @@ final class TrackerRecordStore: DataStoreDelegate {
         return result
     }
     
+    func getFirstDay() -> Date? {
+        var record: TrackerRecordCoreData?
+        record = dataStore.query(
+            className: .TrackerRecordCoreData,
+            sortDescriptors: [SortDescriptor(name: "doneAt", ascending: true)],
+            limit: 1
+        ).first
+        
+        return record?.doneAt
+    }
+    
+    func getLastDay() -> Date? {
+        var record: TrackerRecordCoreData?
+        record = dataStore.query(
+            className: .TrackerRecordCoreData,
+            sortDescriptors: [SortDescriptor(name: "doneAt", ascending: false)],
+            limit: 1
+        ).first
+        
+        return record?.doneAt
+    }
+    
     func toggleTrackerRecord(doneAt: Date, trackerId: TrackerCoreData) throws {
         do {
             isTrackerDone(doneAt: doneAt, trackerId: trackerId) ? try deleteTrackerRecord(doneAt: doneAt, trackerId: trackerId) : try addTrackerRecord(doneAt: doneAt, trackerId: trackerId)
@@ -66,6 +88,15 @@ final class TrackerRecordStore: DataStoreDelegate {
     
     func isTrackerDone(doneAt: Date, trackerId: TrackerCoreData) -> Bool {
         getTrackerRecordFor(trackerId: trackerId, doneAt: doneAt) != nil ? true : false
+    }
+    
+    func getCompletedTrackerRecordsCount(className: CoreDataClasses) -> Int {
+        dataStore.getRecordsCount(className: className)
+    }
+    
+    func getCompletedTrackerRecords() -> [TrackerRecordCoreData] {
+        dataStore.query(className: .TrackerRecordCoreData)
+        
     }
     
     func didUpdate() {

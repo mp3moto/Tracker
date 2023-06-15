@@ -1,6 +1,6 @@
 import Foundation
 
-struct daylyReport {
+struct DailyReport {
     let doneAt: Date
     let dayofWeek: Int
     let trackersDone: Int

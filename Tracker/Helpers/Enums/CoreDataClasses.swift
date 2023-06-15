@@ -1,8 +1,7 @@
-//
-//  CoreDataClasses.swift
-//  Tracker
-//
-//  Created by Ренат on 14.06.2023.
-//
-
 import Foundation
+
+enum CoreDataClasses: String {
+    case TrackerCoreData
+    case TrackerCategoryCoreData
+    case TrackerRecordCoreData
+}

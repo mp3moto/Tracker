@@ -10,8 +10,21 @@ final class TabBarViewController: UITabBarController {
         let trackerRecordStore = TrackerRecordStore(dataStore: dataStore)
         //-----------------
         
-        let trackerListVC = UINavigationController(rootViewController: TrackerListViewController(trackerStore: trackerStore, categoryStore: categoryStore, trackerRecordStore: trackerRecordStore))
-        let statisticsVC = UINavigationController(rootViewController: StatisticsViewController())
+        let trackerListVC = UINavigationController(
+            rootViewController: TrackerListViewController(
+                trackerStore: trackerStore,
+                categoryStore: categoryStore,
+                trackerRecordStore: trackerRecordStore
+            )
+        )
+        let statisticsVC = UINavigationController(
+            rootViewController: StatisticsViewController(
+                statisticsService: StatisticsService(
+                    trackerStore: trackerStore,
+                    trackerRecordStore: trackerRecordStore
+                )
+            )
+        )
 
         trackerListVC.tabBarItem = UITabBarItem(title: LocalizedString.trackers, image: UIImage(named: "iconTrackers"), tag: 0)
         statisticsVC.tabBarItem = UITabBarItem(title: LocalizedString.statistics, image: UIImage(named: "iconStatistics"), tag: 1)

@@ -44,3 +44,4 @@
 "trackersFilterToday" = "Трекеры на сегодня";
 "trackersFilterTodayCompleted" = "Завершенные";
 "trackersFilterTodayUncompleted" = "Незавершенные";
+"nothingToAnalyze" = "Анализировать пока нечего";

@@ -12,7 +12,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     private var trackerIds: [TrackerCoreData] = []
     private var trackersFilter: TrackersFilter = .all {
         didSet {
-            print(trackersFilter)
+            updateTrackers()
         }
     }
     private var searchBarIsEmpty: Bool {
@@ -314,7 +314,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         let filtersViewModel = FiltersViewModel(selectedFilter: trackersFilter)
         filtersViewModel.onFilterSelect = { [weak self] selectedFilter in
             self?.trackersFilter = selectedFilter
-            self?.updateTrackers()
+            //self?.updateTrackers()
             self?.dismiss(animated: true)
         }
         
@@ -429,12 +429,5 @@ extension TrackerListViewController: UISearchResultsUpdating {
         }
         trackerStore.searchQuery = searchText
         updateTrackers()
-    }
-}
-
-final class StatisticsViewController: UIViewController {
-    override func viewDidLoad() {
-        view.backgroundColor = UIColor(named: "YPWhite")
-        title = LocalizedString.statistics
     }
 }

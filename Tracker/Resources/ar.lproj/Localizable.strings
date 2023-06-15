@@ -44,3 +44,4 @@
 "trackersFilterToday" = "Tracker for today";
 "trackersFilterTodayCompleted" = "Completed";
 "trackersFilterTodayUncompleted" = "Uncompleted";
+"nothingToAnalyze" = "Nothing to analyze";

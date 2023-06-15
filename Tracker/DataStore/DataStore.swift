@@ -50,6 +50,11 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
         return fetchResultsController
     }()
     
+   
+    private lazy var trackerRecordsFRC = NSFetchedResultsController<TrackerRecordCoreData>()/* = {
+        
+    }()*/
+    
     var categories: [Category] {
         get {
             var categories: [Category] = []
@@ -63,6 +68,7 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
     
     init(context: NSManagedObjectContext) {
         self.context = context
+        
     }
     
     override convenience init() {
@@ -71,7 +77,11 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
     }
     
     func saveRecord<E: NSManagedObject>(object: E) throws {
-        try context.save()
+        do {
+            try context.save()
+        } catch {
+            context.rollback()
+        }
     }
     
     func deleteRecord<E: NSManagedObject>(object: E) throws {
@@ -97,10 +107,46 @@ final class DataStore: NSObject, NSFetchedResultsControllerDelegate {
             else { return [] }
             let request = NSFetchRequest<E>(entityName: className.rawValue)
             request.predicate = NSPredicate(format: sql, additionalParam)
+            //request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
             let objects = try? context.fetch(request)
             return objects ?? []
         }
     }
+    
+    func makeSortDescriptors(_ input: [SortDescriptor]) -> [NSSortDescriptor] {
+        var result: [NSSortDescriptor] = []
+        input.forEach { item in
+            result.append(NSSortDescriptor(key: "\(item.name)", ascending: item.ascending))
+        }
+        return result
+    }
+    
+    func query<E: NSManagedObject>(
+        className: CoreDataClasses,
+        sql: String? = nil,
+        paramsForSql: [Any]? = nil,
+        sortDescriptors: [SortDescriptor]? = nil,
+        limit: Int? = nil
+    ) -> [E] {
+        let fetchRequest = NSFetchRequest<E>(entityName: className.rawValue)
+        if let sql = sql {
+            fetchRequest.predicate = NSPredicate(format: sql, argumentArray: paramsForSql)
+        }
+        if let sortDescriptors = sortDescriptors {
+            fetchRequest.sortDescriptors = makeSortDescriptors(sortDescriptors)
+        }
+        fetchRequest.fetchLimit = limit ?? 0
+        let objects = try? context.fetch(fetchRequest)
+        return objects ?? []
+    }
+    
+    func getRecordsCount(className: CoreDataClasses) -> Int {
+        let fetchRequest = NSFetchRequest<NSNumber>(entityName: className.rawValue)
+        fetchRequest.resultType = .countResultType
+        return (try? context.fetch(fetchRequest).first)?.intValue ?? 0
+    }
+    
+    
     
     func numberOfRowsInSectionForCategories(_ section: Int) -> Int {
         categoriesFRC.sections?[section].numberOfObjects ?? 0

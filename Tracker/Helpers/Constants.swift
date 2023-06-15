@@ -59,19 +59,5 @@ struct LocalizedString {
     static let trackersFilterToday = NSLocalizedString("trackersFilterToday", comment: "")
     static let trackersFilterTodayCompleted = NSLocalizedString("trackersFilterTodayCompleted", comment: "")
     static let trackersFilterTodayUncompleted = NSLocalizedString("trackersFilterTodayUncompleted", comment: "")
-}
-
-enum CoreDataClasses: String {
-    case TrackerCoreData
-    case TrackerCategoryCoreData
-    case TrackerRecordCoreData
-}
-
-enum TrackerType: String {
-    case habit
-    case event
-}
-
-enum AppImages: String {
-    case iconPinned
+    static let nothingToAnalyze = NSLocalizedString("nothingToAnalyze", comment: "")
 }
