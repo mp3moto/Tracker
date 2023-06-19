@@ -1,7 +1,7 @@
 import UIKit
 
 final class StatisticsViewController: UIViewController {
-    private let statisticsService: StatisticsService
+    private let viewModel: StatisticsViewModel
     
     private let noStatisticsView: UIView = {
         let noTrackersIndicatorView = UIView()
@@ -36,7 +36,8 @@ final class StatisticsViewController: UIViewController {
         return noTrackersIndicatorView
     }()
     private let metricsView: UIView = {
-        let view = UIView()
+        let view = UIView(frame: .zero)
+        view.clipsToBounds = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -45,21 +46,8 @@ final class StatisticsViewController: UIViewController {
     private let trackersCompletedView = StatisticsItemView()
     private let averageTrackersCompletedView = StatisticsItemView()
     
-    private func placeholderIfNeeded() {
-        if statisticsService.completedRecordsCount == 0 &&
-            !noStatisticsView.isDescendant(of: view) {
-            view.addSubview(noStatisticsView)
-            NSLayoutConstraint.activate([
-                noStatisticsView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                noStatisticsView.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor)
-            ])
-        } else {
-            noStatisticsView.removeFromSuperview()
-        }
-    }
-    
-    init(statisticsService: StatisticsService) {
-        self.statisticsService = statisticsService
+    init(viewModel: StatisticsViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -70,26 +58,56 @@ final class StatisticsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        configureNavigationBar()
         
-        view.addSubview(metricsView)
-        metricsView.addSubview(bestPeriodView)
-        metricsView.addSubview(bestDaysView)
-        metricsView.addSubview(trackersCompletedView)
-        metricsView.addSubview(averageTrackersCompletedView)
+        configureNavigationBar()
         
         bestPeriodView.metricDescription = "Лучший период"
         bestDaysView.metricDescription = "Идеальные дни"
         trackersCompletedView.metricDescription = "Трекеров завершено"
         averageTrackersCompletedView.metricDescription = "Среднее значение"
         
-        bestPeriodView.value = "6"
-        bestDaysView.value = "2"
-        trackersCompletedView.value = "5"
-        averageTrackersCompletedView.value = "4"
+        bind()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewModel.getStatistic()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+    }
+    
+    private func configureNavigationBar() {
+        let addTrackerButton = UIButton()
+        addTrackerButton.setImage(UIImage(named: "Add tracker"), for: .normal)
         
+        addTrackerButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        title = LocalizedString.statistics
+        navigationController?.navigationBar.prefersLargeTitles = true
+        let appearance = UINavigationBarAppearance()
+        appearance.largeTitleTextAttributes = [.font: UIFont(name: "YSDisplay-Bold", size: 34) ?? "System"]
+        navigationItem.standardAppearance = appearance
+    }
+    
+    private func setupUI() {
+        if viewModel.trackersCompleted > 0 {
+            view.addSubview(metricsView)
+            metricsView.addSubview(bestPeriodView)
+            metricsView.addSubview(bestDaysView)
+            metricsView.addSubview(trackersCompletedView)
+            metricsView.addSubview(averageTrackersCompletedView)
+            setupConstraintsAndGradients()
+        } else if metricsView.isDescendant(of: view) {
+            metricsView.removeFromSuperview()
+        }
+        
+    }
+    
+    private func setupConstraintsAndGradients() {
         let statisticsItemHeightAnchorMultiplier = 0.1236
-        
+
         NSLayoutConstraint.activate([
             metricsView.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor),
             metricsView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
@@ -114,31 +132,70 @@ final class StatisticsViewController: UIViewController {
             averageTrackersCompletedView.topAnchor.constraint(equalTo: trackersCompletedView.bottomAnchor, constant: 12),
             averageTrackersCompletedView.leadingAnchor.constraint(equalTo: trackersCompletedView.leadingAnchor),
             averageTrackersCompletedView.trailingAnchor.constraint(equalTo: trackersCompletedView.trailingAnchor),
-            averageTrackersCompletedView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: statisticsItemHeightAnchorMultiplier),
+            averageTrackersCompletedView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: statisticsItemHeightAnchorMultiplier)
         ])
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        statisticsService.trackersCompleted()
-        print(statisticsService.trackersCompletedAverage())
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        placeholderIfNeeded()
-    }
-    
-    private func configureNavigationBar() {
-        let addTrackerButton = UIButton()
-        addTrackerButton.setImage(UIImage(named: "Add tracker"), for: .normal)
         
-        addTrackerButton.translatesAutoresizingMaskIntoConstraints = false
+        view.layoutIfNeeded()
         
-        title = LocalizedString.statistics
-        navigationController?.navigationBar.prefersLargeTitles = true
-        let appearance = UINavigationBarAppearance()
-        appearance.largeTitleTextAttributes = [.font: UIFont(name: "YSDisplay-Bold", size: 34) ?? "System"]
-        navigationItem.standardAppearance = appearance
+        metricsView.subviews.forEach {
+            addBorderGradient(to: $0)
+        }
+    }
+    
+    func bind() {
+        viewModel.onStatisticsRefreshed = { [weak self] in
+            guard let self = self else { return }
+            self.refreshStatisticsViews(
+                trackersCompleted: self.viewModel.trackersCompleted,
+                trackersAverage: self.viewModel.trackersAverage
+            )
+        }
+    }
+    
+    private func placeholderIfNeeded() {
+        if viewModel.trackersCompleted == 0 {
+            view.addSubview(noStatisticsView)
+            NSLayoutConstraint.activate([
+                noStatisticsView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                noStatisticsView.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor)
+            ])
+        } else if noStatisticsView.isDescendant(of: view) {
+            noStatisticsView.removeFromSuperview()
+        }
+    }
+    
+    func refreshStatisticsViews(trackersCompleted: Int, trackersAverage: Double) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.trackersCompletedView.value = "\(trackersCompleted)"
+            self.trackersCompletedView.metricDescription = String.localizedStringWithFormat(NSLocalizedString("trackersCompleted", comment: ""), trackersCompleted)
+            self.averageTrackersCompletedView.value = "\(trackersAverage)"
+            
+            self.setupUI()
+            self.placeholderIfNeeded()
+        }
+    }
+    
+    func addBorderGradient(to view: UIView) {
+        let gradient = CAGradientLayer()
+        gradient.frame = view.bounds
+        gradient.locations = [0, 0.5, 1.0]
+        gradient.colors = [
+            UIColor(red: 0.992, green: 0.298, blue: 0.286, alpha: 1).cgColor,
+            UIColor(red: 0.274, green: 0.902, blue: 0.615, alpha: 1).cgColor,
+            UIColor(red: 0.0, green: 0.482, blue: 0.98, alpha: 1).cgColor
+        ]
+        gradient.startPoint = CGPoint(x: 0, y: 0)
+        gradient.endPoint = CGPoint(x: 1, y: 0)
+        gradient.masksToBounds = true
+        
+        let shape = CAShapeLayer()
+        shape.lineWidth = 2
+        shape.path = UIBezierPath(roundedRect: view.bounds, cornerRadius: 16).cgPath
+        shape.strokeColor = UIColor.black.cgColor
+        shape.fillColor = UIColor.clear.cgColor
+        gradient.mask = shape
+        
+        view.layer.addSublayer(gradient)
     }
 }

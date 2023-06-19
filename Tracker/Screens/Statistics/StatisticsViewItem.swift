@@ -35,6 +35,7 @@ final class StatisticsItemView: UIView {
         let label = UILabel()
         label.font = UIFont(name: "YSDisplay-Bold", size: 34)
         label.textColor = UIColor(named: "YPBlack")
+        label.text = "0"
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -56,25 +57,6 @@ final class StatisticsItemView: UIView {
         addSubview(metricDescriptionView)
         metricDescriptionView.addSubview(metricDescriptionLabel)
         
-        let gradient = CAGradientLayer()
-        gradient.frame = CGRect(origin: .zero, size: CGSize(width: 100, height: 100))
-        gradient.locations = [0, 0.5, 1.0]
-        gradient.colors = [
-            UIColor(red: 0.992, green: 0.298, blue: 0.286, alpha: 1).cgColor,
-            UIColor(red: 0.274, green: 0.902, blue: 0.615, alpha: 1).cgColor,
-            UIColor(red: 0.0, green: 0.482, blue: 0.98, alpha: 1).cgColor
-        ]
-        gradient.startPoint = CGPoint(x: 0, y: 0)
-        gradient.endPoint = CGPoint(x: 1, y: 0)
-        gradient.masksToBounds = true
-        gradient.cornerRadius = 16
-        
-        layer.borderWidth = 1
-        layer.borderColor = UIColor(named: "YPBlack")?.cgColor
-        layer.addSublayer(gradient)
-        
-        layer.cornerRadius = 16
-        
         NSLayoutConstraint.activate([
             valueLabelView.topAnchor.constraint(equalTo: topAnchor, constant: 12),
             valueLabelView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
@@ -94,6 +76,9 @@ final class StatisticsItemView: UIView {
             metricDescriptionLabel.leadingAnchor.constraint(equalTo: metricDescriptionView.leadingAnchor),
             metricDescriptionLabel.trailingAnchor.constraint(equalTo: metricDescriptionView.trailingAnchor)
         ])
+        
+        layer.cornerRadius = 16
+        clipsToBounds = true
     }
     
     required init?(coder: NSCoder) {

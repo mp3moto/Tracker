@@ -3,12 +3,10 @@ import UIKit
 final class TabBarViewController: UITabBarController {
     override func viewDidLoad() {
         
-        //Временное решение
         let dataStore = DataStore()
         let categoryStore = CategoryStore(dataStore: dataStore)
         let trackerStore = TrackerStore(dataStore: dataStore)
         let trackerRecordStore = TrackerRecordStore(dataStore: dataStore)
-        //-----------------
         
         let trackerListVC = UINavigationController(
             rootViewController: TrackerListViewController(
@@ -19,9 +17,11 @@ final class TabBarViewController: UITabBarController {
         )
         let statisticsVC = UINavigationController(
             rootViewController: StatisticsViewController(
-                statisticsService: StatisticsService(
-                    trackerStore: trackerStore,
-                    trackerRecordStore: trackerRecordStore
+                viewModel: StatisticsViewModel(
+                    model: StatisticsService(
+                        trackerStore: trackerStore,
+                        trackerRecordStore: trackerRecordStore
+                    )
                 )
             )
         )
