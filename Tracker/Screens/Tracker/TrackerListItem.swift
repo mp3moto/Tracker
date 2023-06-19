@@ -122,4 +122,8 @@ final class TrackerListItem: UICollectionViewCell {
             iconPinned.trailingAnchor.constraint(equalTo: itemBackground.trailingAnchor, constant: -4)
         ])
     }
+    
+    func getContextMenuPreview() -> UIView {
+        itemBackground
+    }
 }

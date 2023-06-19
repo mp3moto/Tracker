@@ -115,6 +115,8 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         return button
     }()
     
+    private let emptyViewForCellContextMenuWhenGuardExecuted = UIView(frame: .zero)
+    
     init(trackerStore: TrackerStore, categoryStore: CategoryStore, trackerRecordStore: TrackerRecordStore) {
         self.trackerStore = trackerStore
         self.categoryStore = categoryStore
@@ -198,7 +200,6 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         if !isFiltering {
             if categories?.count == 0 {
                 collection.addSubview(noTrackersView)
-                //filtersButton.isHidden = true
                 NSLayoutConstraint.activate([
                     noTrackersView.centerXAnchor.constraint(equalTo: collection.centerXAnchor),
                     noTrackersView.centerYAnchor.constraint(equalTo: collection.centerYAnchor)
@@ -206,7 +207,6 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
             } else {
                 if noTrackersView.isDescendant(of: collection) {
                     noTrackersView.removeFromSuperview()
-                    //filtersButton.isHidden = false
                 }
             }
         } else {
@@ -314,7 +314,6 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         let filtersViewModel = FiltersViewModel(selectedFilter: trackersFilter)
         filtersViewModel.onFilterSelect = { [weak self] selectedFilter in
             self?.trackersFilter = selectedFilter
-            //self?.updateTrackers()
             self?.dismiss(animated: true)
         }
         
@@ -327,7 +326,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     }
 }
 
-extension TrackerListViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+extension TrackerListViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout/*, UIContextMenuInteractionDelegate*/ {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         categories?.count ?? 0
     }
@@ -414,6 +413,13 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
                 }
             ])
         })
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, contextMenuConfiguration configuration: UIContextMenuConfiguration, highlightPreviewForItemAt indexPath: IndexPath) -> UITargetedPreview? {
+        guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerListItem
+        else { return UITargetedPreview(view: emptyViewForCellContextMenuWhenGuardExecuted)}
+        
+        return UITargetedPreview(view: cell.getContextMenuPreview())
     }
 }
 
