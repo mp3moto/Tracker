@@ -168,7 +168,7 @@ final class StatisticsViewController: UIViewController {
             guard let self = self else { return }
             self.trackersCompletedView.value = "\(trackersCompleted)"
             self.trackersCompletedView.metricDescription = String.localizedStringWithFormat(NSLocalizedString("trackersCompleted", comment: ""), trackersCompleted)
-            self.averageTrackersCompletedView.value = "\(trackersAverage)"
+            self.averageTrackersCompletedView.value = String(format: "%.1f", trackersAverage)
             
             self.setupUI()
             self.placeholderIfNeeded()
