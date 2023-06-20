@@ -1,5 +1,4 @@
 import UIKit
-import YandexMobileMetrica
 
 final class TrackerListViewController: UIViewController, DataStoreDelegate {
     private let trackerStore: TrackerStore
@@ -116,11 +115,14 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     }()
     
     private let emptyViewForCellContextMenuWhenGuardExecuted = UIView(frame: .zero)
+    private let analyticsServices: AnalyticsServicesProtocol?
+    private let screenName = "Main"
     
-    init(trackerStore: TrackerStore, categoryStore: CategoryStore, trackerRecordStore: TrackerRecordStore) {
+    init(trackerStore: TrackerStore, categoryStore: CategoryStore, trackerRecordStore: TrackerRecordStore, analyticsServices: AnalyticsServicesProtocol? = nil) {
         self.trackerStore = trackerStore
         self.categoryStore = categoryStore
         self.trackerRecordStore = trackerRecordStore
+        self.analyticsServices = analyticsServices
         trackerStore.trackerRecordStore = trackerRecordStore
         super.init(nibName: nil, bundle: nil)
     }
@@ -133,8 +135,8 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         super.viewDidLoad()
         
         view.backgroundColor = .systemBackground
-        //for screenshotTest
-        //view.backgroundColor = .green
+        /* for screenshotTest */
+            //view.backgroundColor = .green
         //------------------
         configureNavigationBar()
         dateFromDatePicker = datePicker.date.prepareDate()
@@ -173,15 +175,28 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
         placeholderIfNeeded()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        analyticsServices?.openScreen(screen: screenName)
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        analyticsServices?.closeScreen(screen: screenName)
+    }
+    
     private func prepareCategories() -> [TrackerCategory] {
         var result: [TrackerCategory] = []
         let filteredTrackers = trackerStore.getTrackers(filter: trackersFilter)
 
         var categoryNames: Set<String> = []
+        
         filteredTrackers.forEach {
             categoryNames.insert($0.category)
         }
-        let categoryNamesSorted = categoryNames.sorted()
+        var categoryNamesSorted = categoryNames.sorted()
+        if let pinnedIndex = categoryNamesSorted.firstIndex(of: LocalizedString.pinned) {
+            categoryNamesSorted.remove(at: pinnedIndex)
+            categoryNamesSorted.insert(LocalizedString.pinned, at: 0)
+        }
         categoryNamesSorted.forEach {
             let currentCategory = $0
             result.append(TrackerCategory(category: currentCategory, trackers: filteredTrackers.filter { $0.category == currentCategory }))
@@ -269,7 +284,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     }
     
     @objc private func addTracker() {
-        YMMYandexMetrica.reportEvent("Add Button taped", parameters: nil)
+        analyticsServices?.tapOn(element: Const.analyticsIdentifierForAddButton)
         
         let createNewTrackerVC = CreateNewTrackerViewController(trackerStore: trackerStore, categoryStore: categoryStore)
         createNewTrackerVC.completionCancel = { [weak self] in
@@ -285,6 +300,7 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     @objc private func checkDone(sender: DoneButton) {
         guard let date = dateFromDatePicker else { return }
         do {
+            analyticsServices?.tapOn(element: Const.analyticsIdentifierForTracker)
             try trackerRecordStore.toggleTrackerRecord(doneAt: date, trackerId: trackerIds[sender.tag])
         } catch let error {
             print(error.localizedDescription)
@@ -311,6 +327,8 @@ final class TrackerListViewController: UIViewController, DataStoreDelegate {
     }
     
     @objc private func showFilteringMenu() {
+        analyticsServices?.tapOn(element: Const.analyticsIdentifierForFilterButton)
+        
         let filtersViewModel = FiltersViewModel(selectedFilter: trackersFilter)
         filtersViewModel.onFilterSelect = { [weak self] selectedFilter in
             self?.trackersFilter = selectedFilter
@@ -392,6 +410,7 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
                 
                 UIAction(title: LocalizedString.edit) { [weak self] _ in
                     guard let self = self else { return }
+                    self.analyticsServices?.tapOn(element: Const.analyticsIdentifierForTrackerContextMenuEdit)
                     var trackerType: TrackerType = .event
                     if let _ = tracker.schedule {
                         trackerType = .habit
@@ -409,6 +428,7 @@ extension TrackerListViewController: UICollectionViewDataSource, UICollectionVie
                 
                 UIAction(title: LocalizedString.delete, attributes: .destructive) { [weak self] _ in
                     guard let self = self else { return }
+                    self.analyticsServices?.tapOn(element: Const.analyticsIdentifierForTrackerContextMenuDelete)
                     self.deleteConfirmationDialog(tracker: tracker.id)
                 }
             ])

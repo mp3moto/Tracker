@@ -13,13 +13,13 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>zero</key>
-			<string>%d трекеров завершено</string>
+			<string>трекеров завершено</string>
 			<key>one</key>
-			<string>%d трекер завершен</string>
+			<string>трекер завершен</string>
 			<key>few</key>
-			<string>%d трекера завершено</string>
+			<string>трекера завершено</string>
 			<key>many</key>
-			<string>%d трекеров завершено</string>
+			<string>трекеров завершено</string>
 		</dict>
 	</dict>
 	<key>daysDone</key>

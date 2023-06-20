@@ -13,7 +13,6 @@ final class CategoryStore {
         return categories
     }
     
-    
     func getCategoryStruct(_ id: TrackerCategoryCoreData) -> Category? {
         return Category(name: id.name ?? Const.noName)
     }

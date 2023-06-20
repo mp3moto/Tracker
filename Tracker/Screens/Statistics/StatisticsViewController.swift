@@ -61,10 +61,9 @@ final class StatisticsViewController: UIViewController {
         
         configureNavigationBar()
         
-        bestPeriodView.metricDescription = "Лучший период"
-        bestDaysView.metricDescription = "Идеальные дни"
-        trackersCompletedView.metricDescription = "Трекеров завершено"
-        averageTrackersCompletedView.metricDescription = "Среднее значение"
+        bestPeriodView.metricDescription = LocalizedString.statisticsBestPeriod
+        bestDaysView.metricDescription = LocalizedString.statisticsBestDays
+        averageTrackersCompletedView.metricDescription = LocalizedString.statisticsAverage
         
         bind()
     }

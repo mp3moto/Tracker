@@ -55,7 +55,9 @@ final class CategoriesViewModel {
     }
     
     func deleteCategory(at indexPath: IndexPath) {
-        guard let categoryToDelete = model.getCategory(indexPath) else { return }
+        guard let categoryToDelete = model.getCategory(indexPath),
+              categoryToDelete != selectedCategory
+        else { return }
         try? model.deleteCategory(categoryToDelete)
         updateCategories()
     }

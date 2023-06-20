@@ -7,12 +7,14 @@ final class TabBarViewController: UITabBarController {
         let categoryStore = CategoryStore(dataStore: dataStore)
         let trackerStore = TrackerStore(dataStore: dataStore)
         let trackerRecordStore = TrackerRecordStore(dataStore: dataStore)
+        let analyticsServices = AnalyticsServices(services: [AppMetrica(key: Const.appMetricaApiKey)])
         
         let trackerListVC = UINavigationController(
             rootViewController: TrackerListViewController(
                 trackerStore: trackerStore,
                 categoryStore: categoryStore,
-                trackerRecordStore: trackerRecordStore
+                trackerRecordStore: trackerRecordStore,
+                analyticsServices: analyticsServices
             )
         )
         let statisticsVC = UINavigationController(

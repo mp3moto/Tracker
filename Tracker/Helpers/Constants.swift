@@ -8,6 +8,13 @@ struct Const {
     static let trackerNameLengthLimit = 38
     static let habit = "habit"
     static let event = "event"
+    
+    static let appMetricaApiKey = "915437ea-6f5a-4ce2-95af-7b25c46792c2"
+    static let analyticsIdentifierForAddButton = "add_track"
+    static let analyticsIdentifierForTracker = "track"
+    static let analyticsIdentifierForFilterButton = "filter"
+    static let analyticsIdentifierForTrackerContextMenuEdit = "edit"
+    static let analyticsIdentifierForTrackerContextMenuDelete = "delete"
 }
 
 struct LocalizedString {
@@ -60,4 +67,7 @@ struct LocalizedString {
     static let trackersFilterTodayCompleted = NSLocalizedString("trackersFilterTodayCompleted", comment: "")
     static let trackersFilterTodayUncompleted = NSLocalizedString("trackersFilterTodayUncompleted", comment: "")
     static let nothingToAnalyze = NSLocalizedString("nothingToAnalyze", comment: "")
+    static let statisticsAverage = NSLocalizedString("statisticsAverage", comment: "")
+    static let statisticsBestPeriod = NSLocalizedString("statisticsBestPeriod", comment: "")
+    static let statisticsBestDays = NSLocalizedString("statisticsBestDays", comment: "")
 }

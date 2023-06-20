@@ -10,7 +10,7 @@
 "sat" = "Saturday";
 "sun" = "Sunday";
 "done" = "Done";
-"category" = "Categoty";
+"category" = "Category";
 "addCategory" = "Add category";
 "edit" = "Edit";
 "delete" = "Delete";
@@ -41,7 +41,10 @@
 "save" = "Save";
 "filters" = "Filters";
 "trackersFilterAll" = "All Trackers";
-"trackersFilterToday" = "Tracker for today";
+"trackersFilterToday" = "Trackers for today";
 "trackersFilterTodayCompleted" = "Completed";
 "trackersFilterTodayUncompleted" = "Uncompleted";
 "nothingToAnalyze" = "Nothing to analyze";
+"statisticsAverage" = "Average per day value";
+"statisticsBestPeriod" = "Best period";
+"statisticsBestDays" = "Best days";

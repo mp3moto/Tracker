@@ -182,13 +182,12 @@ extension CategoriesViewCotroller: UITableViewDataSource, UITableViewDelegate {
                         self?.categoryUpdateCompletion?()
                         self?.dismiss(animated: true)
                     }
-                    //self.lastCategoriesCount = self.viewModel.categoriesCount()
+
                     self.present(addCategoryVC, animated: true)
                 },
                 
                 UIAction(title: LocalizedString.delete, attributes: .destructive) { [weak self] _ in
                     self?.viewModel.deleteCategory(at: indexPath)
-                    //TODO: Если ранее была выбрана категория и ее удалить, то в newTrackerVC остается ссылка не нее. Надо исправить
                 }
             ])
         })

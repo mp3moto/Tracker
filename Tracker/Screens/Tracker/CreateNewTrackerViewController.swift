@@ -63,8 +63,6 @@ final class CreateNewTrackerViewController: UIViewController {
         ])
     }
     
-    //Здесь что-то придумать с дублированием
-    
     @objc private func addNewHabit() {
         let trackerType = TrackerType.habit
         let newHabitVC = NewTrackerViewController(trackerType: trackerType, trackerStore: trackerStore, categoryStore: categoryStore)

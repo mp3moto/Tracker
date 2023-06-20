@@ -45,3 +45,6 @@
 "trackersFilterTodayCompleted" = "Завершенные";
 "trackersFilterTodayUncompleted" = "Незавершенные";
 "nothingToAnalyze" = "Анализировать пока нечего";
+"statisticsAverage" = "Среднее значение";
+"statisticsBestPeriod" = "Лучший период";
+"statisticsBestDays" = "Идеальные дни";
