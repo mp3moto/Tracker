@@ -55,7 +55,7 @@ final class TrackerListCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        backgroundColor = UIColor(named: "YPGray")
+        backgroundColor = UIColor(named: "YPTextFieldBackground")
         
         chevronImage.translatesAutoresizingMaskIntoConstraints = false
         

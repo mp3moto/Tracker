@@ -2,7 +2,7 @@ import Foundation
 
 final class TrackerStore: DataStoreDelegate {
     weak var delegate: DataStoreDelegate?
-    var trackerRecordStore: TrackerRecordStore?
+    weak var trackerRecordStore: TrackerRecordStore?
     private var dataStore: DataStore
     var dateFromDatePicker: Date? {
         didSet {
@@ -28,44 +28,65 @@ final class TrackerStore: DataStoreDelegate {
         )
     }
 
-    private func prepareSQLQueryString() -> String {
+    private func prepareSQLQueryString(filter: TrackersFilter) -> String {
         let weekDayPacked = dateFromDatePicker?.getWeekDay() ?? 0
-        let defaultResult = "(schedule = NULL) OR (schedule & \(weekDayPacked) != 0)"
+        var sql = ""
+        switch filter {
+        case .today:
+            sql = "(schedule != NULL) AND (schedule & \(weekDayPacked) != 0)"
+        default:
+            sql = "(schedule = NULL) OR (schedule & \(weekDayPacked) != 0)"
+        }
+
         if searchQuery.count > 0 {
-            return "(\(defaultResult)) AND title CONTAINS[c] '\(searchQuery)'"
+            return "(\(sql)) AND title CONTAINS[c] '\(searchQuery)'"
         } else {
             searchQuery = ""
-            return defaultResult
+            return sql
         }
     }
     
-    func getTrackers() -> [Tracker] {
+    func getTrackers(filter: TrackersFilter) -> [Tracker] {
         guard let date = dateFromDatePicker else { return [] }
-        let rawTrackers = dataStore.getRecords(className: .TrackerCoreData, sql: prepareSQLQueryString()) as [TrackerCoreData]
+        let rawTrackers = dataStore.getRecords(className: .TrackerCoreData, sql: prepareSQLQueryString(filter: filter)) as [TrackerCoreData]
         var trackers: [Tracker] = []
         
         rawTrackers.forEach {
             let id = $0
-            let category = $0.category?.name
+            let category = $0.pinned ? LocalizedString.pinned : $0.category?.name
             var schedule: Schedule?
             if let _ = $0.schedule {
                 schedule = unpackSсhedule($0.schedule as? Int32 ?? 0)
             }
             let records = trackerRecordStore?.getTrackerRecords(forTracker: id, atDate: date)
+            let done = trackerRecordStore?.isTrackerDone(doneAt: date, trackerId: id) ?? false
+            
+            var filterCondition: Bool
+            switch filter {
+            case .todayCompleted:
+                filterCondition = true
+            case .todayUncompleted:
+                filterCondition = false
+            default:
+                filterCondition = done
+            }
+            
             if let category = category {
-                trackers.append(
-                    Tracker(
-                        id: id,
-                        title: $0.title ?? Const.noName,
-                        emoji: $0.emoji ?? Const.emptyString,
-                        color: $0.color ?? Const.defaultColor,
-                        category: category,
-                        schedule: schedule,
-                        doneCount: records?.count ?? 0,
-                        done: trackerRecordStore?.isTrackerDone(doneAt: date, trackerId: id) ?? false
-                        //done: false/*fetchedDoneData.filter { $0.doneAt == dateFromDatePicker && $0.tracker?.id == trackerId }.count > 0*/
+                if done == filterCondition {
+                    trackers.append(
+                        Tracker(
+                            id: id,
+                            title: $0.title ?? Const.noName,
+                            emoji: $0.emoji ?? Const.emptyString,
+                            color: $0.color ?? Const.defaultColor,
+                            category: category,
+                            schedule: schedule,
+                            doneCount: records?.count ?? 0,
+                            done: trackerRecordStore?.isTrackerDone(doneAt: date, trackerId: id) ?? false,
+                            pinned: $0.pinned
+                        )
                     )
-                )
+                }
             }
         }
         
@@ -78,11 +99,8 @@ final class TrackerStore: DataStoreDelegate {
             newTracker.title = title
             newTracker.emoji = emoji
             newTracker.color = color
-            if let schedule = schedule {
-                newTracker.schedule = (schedule.packed()) as NSNumber
-            } else {
-                newTracker.schedule = nil
-            }
+            newTracker.pinned = false
+            newTracker.schedule = schedule?.packed() as NSNumber?
             newTracker.category = category
             try dataStore.saveRecord(object: newTracker)
         } catch let error {
@@ -90,7 +108,33 @@ final class TrackerStore: DataStoreDelegate {
         }
     }
     
+    func deleteTracker(tracker: TrackerCoreData) throws {
+        do {
+            try dataStore.deleteRecord(object: tracker)
+        } catch let error {
+            fatalError(error.localizedDescription)
+        }
+    }
+    
+    func updateTracker(tracker: TrackerCoreData) throws {
+        do {
+            try dataStore.saveRecord(object: tracker)
+        } catch let error {
+            fatalError(error.localizedDescription)
+        }
+    }
+    
+    func togglePinned(trackerId: TrackerCoreData) throws {
+        do {
+            let pinned = trackerId.pinned
+            trackerId.pinned = !pinned
+            try dataStore.saveRecord(object: trackerId)
+        }
+    }
+    
     func didUpdate() {
         delegate?.didUpdate()
     }
+    
+    
 }

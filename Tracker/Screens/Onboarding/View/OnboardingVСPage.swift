@@ -45,7 +45,7 @@ final class OnboardingViewControllerPage: UIViewController {
     private func setup() {
         let bgImage = UIImageView(image: UIImage(named: backgroundImage))
         let label = UILabel()
-        let button = YPButton(text: "Вот это технологии!", destructive: false)
+        let button = YPButton(text: buttonText, destructive: false)
         
         button.addTarget(self, action: #selector(showHomeScreen), for: .touchUpInside)
         

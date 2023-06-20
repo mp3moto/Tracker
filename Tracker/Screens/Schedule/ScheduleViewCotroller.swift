@@ -2,13 +2,12 @@ import UIKit
 
 final class ScheduleViewCotroller: UIViewController {
     private let scheduleTableView = UITableView()
-    private let daysOfWeek: [String] = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
+    private let daysOfWeek = LocalizedString.daysOfWeek
     private var days: [Bool] = [false, false, false, false, false, false, false]
-    //weak var parentVC: NewTrackerViewController?
     private var schedule: Schedule?
     var setSchedule: ((Schedule) -> Void)?
     
-    private let addScheduleButton = YPButton(text: "Готово", destructive: false)
+    private let addScheduleButton = YPButton(text: LocalizedString.done, destructive: false)
     
     init(schedule: Schedule? = nil) {
         self.schedule = schedule
@@ -21,7 +20,7 @@ final class ScheduleViewCotroller: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(named: "YPWhite")
+        view.backgroundColor = UIColor.systemBackground
         if let schedule = schedule {
             days = convert(schedule: schedule)
         }
@@ -39,7 +38,7 @@ final class ScheduleViewCotroller: UIViewController {
         
         let titleLabel: UILabel = {
             let label = UILabel()
-            label.text = "Расписание"
+            label.text = LocalizedString.schedule
             label.font = UIFont(name: "YSDisplay-Medium", size: 16)
             label.textColor = UIColor(named: "YPBlack")
             label.translatesAutoresizingMaskIntoConstraints = false
@@ -117,28 +116,34 @@ final class ScheduleViewCotroller: UIViewController {
 
 extension ScheduleViewCotroller: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 7
+        7
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: ScheduleListCell.reuseIdentifier, for: indexPath) as? ScheduleListCell else { return ScheduleListCell() }
-        cell.cellText = daysOfWeek[indexPath.row]
+        var indexPathRow = 0
+        if indexPath.row > 6 {
+            indexPathRow = 6
+        } else {
+            indexPathRow = indexPath.row
+        }
+        cell.cellText = daysOfWeek[indexPathRow]
         cell.layer.maskedCorners = []
-        if indexPath.row == 0 {
+        if indexPathRow == 0 {
             cell.layer.cornerRadius = 16
             cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         }
         
-        if indexPath.row == daysOfWeek.count - 1 {
+        if indexPathRow == daysOfWeek.count - 1 {
             cell.layer.cornerRadius = 16
             cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-            cell.separatorInset = .init(top: 0, left: .infinity, bottom: 0, right: 0)
+            cell.separatorInset = UIEdgeInsets(top: 0, left: cell.bounds.size.width, bottom: 0, right: 0)
         } else {
-            cell.separatorInset = .init(top: 0, left: 16, bottom: 0, right: 16)
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         }
         
-        cell.tumbler.tag = indexPath.row
-        cell.tumbler.isOn = days[indexPath.row]
+        cell.tumbler.tag = indexPathRow
+        cell.tumbler.isOn = days[indexPathRow]
         cell.tumbler.addTarget(self, action: #selector(tumblerChanged), for: .valueChanged)
         return cell
     }

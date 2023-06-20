@@ -4,16 +4,12 @@ final class CategoryListCell: UITableViewCell {
     static let reuseIdentifier = "CategoryListCell"
     private var viewModel: CategoryViewModel?
     
-    var cellText: String? {
-        didSet {
-            titleLabel.text = cellText
-        }
-    }
-    
     var cellViewModel: CategoryViewModel? {
         didSet {
-            cellText = cellViewModel?.name
-            checkmarkImage.isHidden = !(cellViewModel?.selected ?? false)
+            guard let cellViewModel = cellViewModel else { return }
+            titleLabel.text = cellViewModel.name
+            checkmarkImage.isHidden = !cellViewModel.selected
+            configCell(first: cellViewModel.first, last: cellViewModel.last)
         }
     }
     
@@ -23,7 +19,7 @@ final class CategoryListCell: UITableViewCell {
       return view
     }()
     
-    let checkmarkImage: UIImageView = {
+    private let checkmarkImage: UIImageView = {
         let image = UIImageView(image: UIImage(named: "checkmark"))
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
@@ -39,30 +35,12 @@ final class CategoryListCell: UITableViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
+        checkmarkImage.isHidden = true
+        configCell(first: false, last: false)
     }
     
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    func initiate(viewModel: CategoryViewModel) {
-        self.viewModel = viewModel
-        bind()
-    }
-    
-    private func bind() {
-        guard let viewModel = viewModel else { return }
-        viewModel.onChange = { [weak self] in
-            self?.cellText = viewModel.name
-        }
-    }
-    
-    func configCell(number num: Int, of total: Int) {
-        backgroundColor = UIColor(named: "YPGray")
+    func configCell(first: Bool, last: Bool) {
+        backgroundColor = UIColor(named: "YPTextFieldBackground")
 
         contentView.addSubview(containerView)
         containerView.addSubview(titleLabel)
@@ -86,20 +64,16 @@ final class CategoryListCell: UITableViewCell {
         layer.maskedCorners = []
         layer.cornerRadius = 0
         separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        if num == 1 || num == total {
+        if first || last {
             layer.cornerRadius = 16
-            if num == 1 && total == 1 {
+            if first && last {
                 layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
                 separatorInset = UIEdgeInsets(top: 0, left: bounds.size.width, bottom: 0, right: 0)
+            } else if first {
+                layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
             } else {
-                if num != total {
-                    if num == 1 {
-                        layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-                    }
-                } else {
-                    separatorInset = UIEdgeInsets(top: 0, left: bounds.size.width, bottom: 0, right: 0)
-                    layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-                }
+                separatorInset = UIEdgeInsets(top: 0, left: bounds.size.width, bottom: 0, right: 0)
+                layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
             }
         }
     }

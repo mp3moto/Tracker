@@ -3,7 +3,6 @@ import Foundation
 final class CategoriesViewModel {
     var onCategoriesChange: (() -> Void)?
     private var selectedCategory: TrackerCategoryCoreData?
-
     var model: CategoryStore
     var categorySelectCompletion: ((_: TrackerCategoryCoreData) -> Void)?
     private var categoryCellViewModels = [CategoryViewModel]() {
@@ -29,9 +28,17 @@ final class CategoriesViewModel {
         let categories = model.getCategories()
         var tempArray: [CategoryViewModel] = []
         
-        categories.forEach {
-            tempArray.append(CategoryViewModel(name: $0.name ?? Const.noName, selected: $0 == selectedCategory))
+        for (index, item) in categories.enumerated() {
+            tempArray.append(
+                CategoryViewModel(
+                    name: item.name,
+                    selected: item == selectedCategory,
+                    first: index == 0,
+                    last: index == categories.count - 1
+                )
+            )
         }
+
         categoryCellViewModels = tempArray
     }
     
@@ -48,7 +55,9 @@ final class CategoriesViewModel {
     }
     
     func deleteCategory(at indexPath: IndexPath) {
-        guard let categoryToDelete = model.getCategory(indexPath) else { return }
+        guard let categoryToDelete = model.getCategory(indexPath),
+              categoryToDelete != selectedCategory
+        else { return }
         try? model.deleteCategory(categoryToDelete)
         updateCategories()
     }

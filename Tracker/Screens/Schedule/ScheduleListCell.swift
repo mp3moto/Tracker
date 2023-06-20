@@ -17,6 +17,9 @@ final class ScheduleListCell: UITableViewCell {
     
     let tumbler: UISwitch = {
         let tumbler = UISwitch()
+        tumbler.layer.cornerRadius = 16.0
+        tumbler.onTintColor = UIColor(named: "YPTumblerOn")
+        tumbler.backgroundColor = UIColor(named: "YPTumblerOff")
         tumbler.translatesAutoresizingMaskIntoConstraints = false
         return tumbler
     }()
@@ -36,7 +39,7 @@ final class ScheduleListCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        backgroundColor = UIColor(named: "YPGray")
+        backgroundColor = UIColor(named: "YPTextFieldBackground")
         
         contentView.addSubview(containerView)
         containerView.addSubview(titleLabel)

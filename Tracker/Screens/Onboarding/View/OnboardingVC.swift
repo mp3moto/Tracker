@@ -1,8 +1,8 @@
 import UIKit
 
 final class OnboardingViewController: UIPageViewController {
-    private let onboarding_01 = OnboardingViewControllerPage(backgroundImage: "onboardingPage1", pageText: "Отслеживайте только то, что хотите", buttonText: "Вот это технологии!")
-    private let onboarding_02 = OnboardingViewControllerPage(backgroundImage: "onboardingPage2", pageText: "Даже если это не литры воды и йога", buttonText: "Вот это технологии!")
+    private let onboarding_01 = OnboardingViewControllerPage(backgroundImage: "onboardingPage1", pageText: LocalizedString.onboardingPage01Text, buttonText: LocalizedString.onboardingButtonText)
+    private let onboarding_02 = OnboardingViewControllerPage(backgroundImage: "onboardingPage2", pageText: LocalizedString.onboardingPage02Text, buttonText: LocalizedString.onboardingButtonText)
     private let pageControl = UIPageControl()
     private var orderedViewControllers: [UIViewController] = []
     

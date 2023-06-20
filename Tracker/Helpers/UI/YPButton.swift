@@ -5,6 +5,8 @@ final class YPButton: UIButton {
     override var isEnabled: Bool {
         didSet {
             backgroundColor = isEnabled ? UIColor(named: "YPBlack") : UIColor(named: "YPDisabled")
+            let textColor = isEnabled ? "YPButtonText" : "YPWhite"
+            setTitleColor(UIColor(named: textColor), for: .normal)
         }
     }
     
@@ -15,9 +17,9 @@ final class YPButton: UIButton {
         titleLabel?.font = UIFont(name: "YSDisplay-Medium", size: 16)
         if (!destructive) {
             backgroundColor = UIColor(named: "YPBlack")
-            setTitleColor(UIColor(named: "White Color"), for: .normal)
+            setTitleColor(UIColor(named: "YPButtonText"), for: .normal)
         } else {
-            backgroundColor = UIColor(named: "YPWhite")
+            backgroundColor = UIColor.systemBackground
             setTitleColor(UIColor(named: "YPRed"), for: .normal)
             layer.borderWidth = 1
             layer.borderColor = UIColor(named: "YPRed")?.cgColor

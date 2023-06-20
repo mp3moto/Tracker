@@ -15,6 +15,7 @@ struct Tracker {
     let schedule: Schedule?
     let doneCount: Int
     let done: Bool
+    let pinned: Bool
 }
 
 struct TrackerCategory {

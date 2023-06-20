@@ -17,8 +17,7 @@ final class DoneButton: UIButton {
     init() {
         super.init(frame: .zero)
         layer.cornerRadius = 17
-        setImage(UIImage(systemName: "plus"), for: .normal)
-        tintColor = .white
+        tintColor = .systemBackground
         translatesAutoresizingMaskIntoConstraints = false
     }
     
